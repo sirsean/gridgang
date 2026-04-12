@@ -20,15 +20,15 @@ Source lore and iconography:
 
 ## Milestone 1: Playable Prototype
 
-- [ ] Create the Phaser game boot scene and fixed-size game world.
-- [ ] Render the upper conveyor lane and lower player cargo bay.
-- [ ] Define a small set of plain-color polyomino cargo shapes.
-- [ ] Spawn cargo shapes on the conveyor and move them left-to-right.
-- [ ] Allow the player to select one available conveyor shape.
-- [ ] Drop the selected shape into the cargo bay with gravity.
-- [ ] Lock dropped shapes into the bay grid when they collide with floor or settled cargo.
-- [ ] End the run when cargo reaches the top of the bay.
-- [ ] Show current score and final run score.
+- [x] Create the Phaser game boot scene and fixed-size game world.
+- [x] Render the upper conveyor lane and lower player cargo bay.
+- [x] Define a small set of plain-color polyomino cargo shapes.
+- [x] Spawn cargo shapes on the conveyor and move them left-to-right.
+- [x] Allow the player to select one available conveyor shape.
+- [x] Drop the selected shape into the cargo bay with gravity.
+- [x] Lock dropped shapes into the bay grid when they collide with floor or settled cargo.
+- [x] End the run when cargo reaches the top of the bay.
+- [x] Show current score and final run score.
 
 ## Milestone 2: Game Feel
 
