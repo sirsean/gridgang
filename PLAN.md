@@ -12,11 +12,11 @@ Source lore and iconography:
 
 - [x] Capture project plan, stack notes, and human README.
 - [x] Add the Grid Gang icon source asset locally.
-- [ ] Scaffold Vite app.
-- [ ] Add Phaser runtime dependency.
-- [ ] Add Cloudflare Workers deployment tooling.
-- [ ] Establish basic scripts: `dev`, `build`, `preview`, and deployment script.
-- [ ] Add a minimal lint/typecheck/test baseline once the app exists.
+- [x] Scaffold Vite app.
+- [x] Add Phaser runtime dependency.
+- [x] Add Cloudflare Workers deployment tooling.
+- [x] Establish basic scripts: `dev`, `build`, `preview`, and deployment script.
+- [x] Add a minimal typecheck/build baseline once the app exists.
 
 ## Milestone 1: Playable Prototype
 

@@ -4,8 +4,10 @@ This repo is for a new web game called Gridgang.
 
 ## Current State
 
-- The repo has documentation and icon assets, but the Vite/Phaser app has not been scaffolded yet.
-- The directory was not a git repo when these notes were created.
+- The repo has a TypeScript Vite scaffold with Phaser wired into a first boot scene.
+- Cloudflare Workers support is configured with `@cloudflare/vite-plugin`, `wrangler.jsonc`, and a minimal Worker asset handler.
+- The app builds successfully with `npm run build`.
+- The original initial docs/assets were committed after `git init`; newer scaffold files may still be uncommitted.
 - Local icon source asset: `public/assets/grid-gang-icon.png`
 - Local favicon candidate: `public/favicon.png`
 
@@ -23,12 +25,13 @@ Do not invent deep lore beyond what the source supports. It is fine to paraphras
 
 - Runtime: browser game.
 - Build tool: Vite.
+- Language: TypeScript.
 - Game engine: Phaser for 2D rendering and input.
-- Deployment target: Cloudflare Workers.
+- Deployment target: Cloudflare Workers via `@cloudflare/vite-plugin` and Wrangler.
 - Persistence for MVP: `localStorage` only.
 - Server component: intentionally deferred until shared leaderboards are needed.
 
-When scaffolding, prefer a small TypeScript Vite app unless the user asks for JavaScript. Keep Phaser game code isolated from DOM UI code:
+Keep Phaser game code isolated from DOM UI code:
 
 - `src/game/` for Phaser scenes, grid rules, shape definitions, and game state.
 - `src/ui/` only if DOM UI becomes useful outside the canvas.
@@ -60,7 +63,14 @@ Do not let visual effects interfere with shape readability or collision clarity.
 
 The target is Cloudflare Workers, not a traditional server. Keep the MVP fully static from the client perspective. Add Worker routes only when needed for leaderboards or other server-backed features.
 
-Before adding Cloudflare-specific config, check the current Cloudflare Workers + Vite guidance because the recommended setup can change.
+Cloudflare config is currently:
+
+- `vite.config.ts` uses `cloudflare()`.
+- `wrangler.jsonc` sets `main` to `./src/worker/index.ts`.
+- `assets.binding` is `ASSETS`.
+- `assets.not_found_handling` is `single-page-application`.
+
+Before changing Cloudflare-specific config later, check the current Cloudflare Workers + Vite guidance because the recommended setup can change.
 
 ## Implementation Guardrails
 

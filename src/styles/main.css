@@ -1,0 +1,111 @@
+:root {
+  color: #f1f1e6;
+  background: #050505;
+  font-family:
+    ui-monospace, "SFMono-Regular", "SF Mono", Consolas, "Liberation Mono",
+    Menlo, monospace;
+  font-synthesis: none;
+  text-rendering: optimizeLegibility;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body,
+#app {
+  width: 100%;
+  min-width: 320px;
+  min-height: 100%;
+  margin: 0;
+}
+
+body {
+  display: grid;
+  place-items: center;
+  min-height: 100vh;
+  min-height: 100dvh;
+  overflow-x: hidden;
+  background:
+    linear-gradient(180deg, rgba(5, 5, 5, 0.72), rgba(5, 5, 5, 0.96)),
+    repeating-linear-gradient(
+      0deg,
+      rgba(255, 255, 255, 0.03) 0,
+      rgba(255, 255, 255, 0.03) 1px,
+      transparent 1px,
+      transparent 4px
+    ),
+    #050505;
+}
+
+#app {
+  display: grid;
+  width: 100%;
+  min-height: 100vh;
+  min-height: 100dvh;
+  place-items: center;
+}
+
+.shell {
+  display: grid;
+  width: 100%;
+  max-width: 752px;
+  min-height: 100vh;
+  min-height: 100dvh;
+  grid-template-rows: auto auto;
+  gap: 12px;
+  align-content: center;
+  justify-items: center;
+  padding: 16px;
+}
+
+.masthead {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 14px;
+  width: 100%;
+  margin: 0;
+  text-align: left;
+}
+
+.mark {
+  width: 48px;
+  height: 48px;
+  object-fit: contain;
+  image-rendering: pixelated;
+  border: 1px solid #4f5658;
+  background: #050505;
+}
+
+.eyebrow {
+  margin: 0 0 4px;
+  color: #c4a15a;
+  font-size: 0.875rem;
+  text-transform: uppercase;
+}
+
+h1 {
+  margin: 0;
+  color: #f1f1e6;
+  font-size: 1.75rem;
+  line-height: 1;
+  text-transform: uppercase;
+}
+
+#game {
+  display: grid;
+  width: 100%;
+  min-height: 0;
+  place-items: center;
+}
+
+#game canvas {
+  display: block;
+  max-width: 100%;
+  max-height: calc(100vh - 112px);
+  margin-inline: auto;
+  border: 1px solid #4f5658;
+  background: #090909;
+}

@@ -11,14 +11,40 @@ The project uses the Grid Gang lore and iconography from the Fringeling Compendi
 
 ## Status
 
-This project is in the planning/bootstrap stage. The repo currently contains docs and the source icon asset. The Vite, Phaser, and Cloudflare Workers app has not been scaffolded yet.
+This project is in the early scaffold stage. The repo currently contains a TypeScript Vite app, a first Phaser boot scene, Cloudflare Workers config, docs, and the source icon asset.
 
 ## Planned Stack
 
 - Vite for the web app build.
 - Phaser for 2D game rendering, scenes, and input.
-- Cloudflare Workers for deployment.
+- Cloudflare Workers for deployment through `@cloudflare/vite-plugin` and Wrangler.
 - Browser `localStorage` for MVP scoring and high scores.
+
+## Local Development
+
+Install dependencies:
+
+```sh
+npm install
+```
+
+Start the dev server:
+
+```sh
+npm run dev
+```
+
+Build for production:
+
+```sh
+npm run build
+```
+
+Deploy to Cloudflare Workers:
+
+```sh
+npm run deploy
+```
 
 ## Game Premise
 
@@ -30,7 +56,7 @@ The game ends when the stacked containers reach the top of the player cargo bay.
 
 See [PLAN.md](./PLAN.md) for milestones.
 
-The immediate next step is to scaffold the Vite app, install Phaser, and wire a minimal playable prototype with plain-color cargo blocks.
+The immediate next step is to turn the static Phaser boot scene into a minimal playable prototype with plain-color cargo blocks.
 
 ## Future Direction
 

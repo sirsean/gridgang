@@ -1,0 +1,34 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta
+      name="description"
+      content="Gridgang is a gritty cassette-future cargo packing game."
+    />
+    <link rel="icon" type="image/png" href="/favicon.png" />
+    <title>Gridgang</title>
+  </head>
+  <body>
+    <div id="app">
+      <main class="shell" aria-label="Gridgang game shell">
+        <section class="masthead" aria-label="Run status">
+          <img
+            class="mark"
+            src="/assets/grid-gang-icon.png"
+            alt="Grid Gang icon"
+            width="72"
+            height="72"
+          />
+          <div>
+            <p class="eyebrow">Dock 50</p>
+            <h1>Gridgang</h1>
+          </div>
+        </section>
+        <div id="game" aria-label="Gridgang game canvas"></div>
+      </main>
+    </div>
+    <script type="module" src="/src/main.ts"></script>
+  </body>
+</html>
