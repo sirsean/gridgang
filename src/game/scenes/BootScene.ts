@@ -658,6 +658,7 @@ export class BootScene extends Phaser.Scene {
     pointerY: number,
   ) {
     this.reserveGridCells(definition, column, landingRow);
+    const scoreValue = definition.cells.length * 100;
 
     const releaseRow = Math.floor((pointerY - bay.y) / bay.cell);
     const startRow = Phaser.Math.Clamp(releaseRow, 0, landingRow);
@@ -678,6 +679,7 @@ export class BootScene extends Phaser.Scene {
       ease: "Quad.easeIn",
       onComplete: () => {
         container.setDepth(4);
+        this.awardScore(scoreValue, definition, column, landingRow);
       },
     });
   }
@@ -690,13 +692,66 @@ export class BootScene extends Phaser.Scene {
     for (const [cellX, cellY] of definition.cells) {
       this.cargoGrid[row + cellY][column + cellX] = definition.color;
     }
+  }
 
-    this.score += definition.cells.length * 100;
+  private awardScore(
+    value: number,
+    definition: ShapeDefinition,
+    column: number,
+    row: number,
+  ) {
+    this.score += value;
     this.scoreText?.setText(`SCORE ${this.score.toString().padStart(6, "0")}`);
+    this.showScorePop(value, definition, column, row);
 
     if (this.hasTopRowCargo()) {
       this.endGame();
     }
+  }
+
+  private showScorePop(
+    value: number,
+    definition: ShapeDefinition,
+    column: number,
+    row: number,
+  ) {
+    const bounds = this.getShapeCellBounds(definition);
+    const x = bay.x + (column + bounds.centerX) * bay.cell;
+    const y = bay.y + (row + bounds.centerY) * bay.cell;
+    const pop = this.add
+      .text(x, y, `+${value}`, {
+        align: "center",
+        color: `#${definition.color.toString(16).padStart(6, "0")}`,
+        fontFamily: "monospace",
+        fontSize: "34px",
+        stroke: "#050505",
+        strokeThickness: 6,
+      })
+      .setOrigin(0.5)
+      .setDepth(40)
+      .setResolution(2);
+
+    this.tweens.add({
+      targets: pop,
+      alpha: 0,
+      scale: 1.45,
+      y: y - 30,
+      duration: 700,
+      ease: "Quad.easeOut",
+      onComplete: () => {
+        pop.destroy();
+      },
+    });
+  }
+
+  private getShapeCellBounds(definition: ShapeDefinition) {
+    const maxX = Math.max(...definition.cells.map(([cellX]) => cellX));
+    const maxY = Math.max(...definition.cells.map(([, cellY]) => cellY));
+
+    return {
+      centerX: (maxX + 1) / 2,
+      centerY: (maxY + 1) / 2,
+    };
   }
 
   private hasTopRowCargo() {
