@@ -792,7 +792,7 @@ export class BootScene extends Phaser.Scene {
     this.add
       .text(
         360,
-        640,
+        618,
         `RUN COMPLETE\nFINAL SCORE ${this.score.toString().padStart(6, "0")}`,
         {
           align: "center",
@@ -805,6 +805,31 @@ export class BootScene extends Phaser.Scene {
       .setOrigin(0.5)
       .setDepth(51)
       .setResolution(2);
+
+    const homeButton = this.add
+      .rectangle(360, 710, 190, 44, palette.panel, 0.95)
+      .setStrokeStyle(2, palette.previewCell, 0.9)
+      .setDepth(51)
+      .setInteractive({ useHandCursor: true });
+
+    const homeLabel = this.add
+      .text(360, 710, "HOME", {
+        align: "center",
+        color: "#f1f1e6",
+        fontFamily: "monospace",
+        fontSize: "20px",
+      })
+      .setOrigin(0.5)
+      .setDepth(52)
+      .setResolution(2)
+      .setInteractive({ useHandCursor: true });
+
+    const goHome = () => {
+      window.dispatchEvent(new CustomEvent("gridgang:navigate-home"));
+    };
+
+    homeButton.on("pointerdown", goHome);
+    homeLabel.on("pointerdown", goHome);
   }
 
   private removeConveyorCargo(cargo: ConveyorCargo) {

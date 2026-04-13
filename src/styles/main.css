@@ -47,6 +47,51 @@ body {
   place-items: center;
 }
 
+.is-hidden {
+  display: none !important;
+}
+
+.home-screen {
+  display: grid;
+  width: min(720px, 100%);
+  min-height: 100vh;
+  min-height: 100dvh;
+  align-content: center;
+  justify-items: center;
+  gap: 18px;
+  padding: 24px;
+  text-align: center;
+}
+
+.home-mark {
+  width: 160px;
+  height: 160px;
+  object-fit: contain;
+  border: 1px solid #4f5658;
+  background: #050505;
+}
+
+.primary-action {
+  min-width: 180px;
+  min-height: 48px;
+  margin-top: 18px;
+  border: 2px solid #c4a15a;
+  border-radius: 6px;
+  color: #f1f1e6;
+  background: #161616;
+  font: inherit;
+  font-size: 1.25rem;
+  text-transform: uppercase;
+  cursor: pointer;
+}
+
+.primary-action:hover,
+.primary-action:focus-visible {
+  border-color: #f1f1e6;
+  outline: none;
+  background: #252525;
+}
+
 .shell {
   display: grid;
   width: 100%;

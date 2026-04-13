@@ -12,7 +12,26 @@
   </head>
   <body>
     <div id="app">
-      <main class="shell" aria-label="Gridgang game shell">
+      <main id="home-screen" class="home-screen" aria-label="Gridgang home">
+        <img
+          class="home-mark"
+          src="/assets/grid-gang-icon.png"
+          alt="Grid Gang icon"
+          width="160"
+          height="160"
+        />
+        <p class="eyebrow">Dock 50</p>
+        <h1>Gridgang</h1>
+        <button id="start-button" class="primary-action" type="button">
+          Start
+        </button>
+      </main>
+
+      <main
+        id="game-screen"
+        class="shell is-hidden"
+        aria-label="Gridgang game shell"
+      >
         <section class="masthead" aria-label="Run status">
           <img
             class="mark"
