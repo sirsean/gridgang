@@ -194,10 +194,12 @@ export class BootScene extends Phaser.Scene {
   private nextRowIndex = 0;
   private spawnElapsed = 0;
   private score = 0;
+  private timeRemainingMs = 90_000;
   private isGameOver = false;
   private dropPreview: Phaser.GameObjects.Rectangle[] = [];
   private dropColumnPreview: Phaser.GameObjects.Rectangle[] = [];
   private scoreText?: Phaser.GameObjects.Text;
+  private timerText?: Phaser.GameObjects.Text;
 
   constructor() {
     super("boot");
@@ -222,6 +224,14 @@ export class BootScene extends Phaser.Scene {
 
   update(_time: number, delta: number) {
     if (this.isGameOver) {
+      return;
+    }
+
+    this.timeRemainingMs = Math.max(0, this.timeRemainingMs - delta);
+    this.updateTimerText();
+
+    if (this.timeRemainingMs <= 0) {
+      this.endGame();
       return;
     }
 
@@ -815,14 +825,50 @@ export class BootScene extends Phaser.Scene {
       .setDepth(30);
 
     this.scoreText = this.add
-      .text(360, 928, "SCORE 000000", {
-        align: "center",
+      .text(136, 928, "SCORE 000000", {
+        align: "left",
         fontFamily: "monospace",
         fontSize: "22px",
         color: "#f1f1e6",
       })
-      .setOrigin(0.5)
+      .setOrigin(0, 0.5)
       .setDepth(31)
       .setResolution(2);
+
+    this.timerText = this.add
+      .text(584, 928, this.formatTime(this.timeRemainingMs), {
+        align: "right",
+        fontFamily: "monospace",
+        fontSize: "22px",
+        color: "#f1f1e6",
+      })
+      .setOrigin(1, 0.5)
+      .setDepth(31)
+      .setResolution(2);
+  }
+
+  private updateTimerText() {
+    this.timerText?.setText(this.formatTime(this.timeRemainingMs));
+    this.timerText?.setColor(this.getTimerColor());
+  }
+
+  private formatTime(milliseconds: number) {
+    const totalSeconds = Math.ceil(milliseconds / 1000);
+    const minutes = Math.floor(totalSeconds / 60);
+    const seconds = totalSeconds % 60;
+
+    return `${minutes}:${seconds.toString().padStart(2, "0")}`;
+  }
+
+  private getTimerColor() {
+    if (this.timeRemainingMs <= 10_000) {
+      return "#e35335";
+    }
+
+    if (this.timeRemainingMs <= 30_000) {
+      return "#c4a15a";
+    }
+
+    return "#f1f1e6";
   }
 }
