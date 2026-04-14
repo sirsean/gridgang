@@ -6,6 +6,7 @@
   "scripts": {
     "dev": "vite",
     "build": "tsc && vite build",
+    "assets:cells": "node scripts/generate-cell-assets.mjs",
     "preview": "vite preview",
     "deploy": "vite build && wrangler deploy",
     "typecheck": "tsc --noEmit"
@@ -16,6 +17,7 @@
   "devDependencies": {
     "@cloudflare/vite-plugin": "^1.31.2",
     "@cloudflare/workers-types": "^4.20260412.1",
+    "sharp": "^0.34.5",
     "typescript": "^6.0.2",
     "vite": "^8.0.8",
     "wrangler": "^4.81.1"

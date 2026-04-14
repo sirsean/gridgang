@@ -2,10 +2,13 @@ import * as Phaser from "phaser";
 import { defaultMission, type DockMission } from "../missions";
 
 type CargoCell = [number, number];
+type CellAssetGroup = "hazard" | "cargo-a" | "cargo-b" | "cargo-c" | "cargo-d";
+type CellTextureUsage = "conveyor" | "bay";
 
 type ShapeDefinition = {
   key: string;
   color: number;
+  assetGroup: CellAssetGroup;
   cells: CargoCell[];
 };
 
@@ -14,6 +17,7 @@ type ConveyorCargo = {
   definition: ShapeDefinition;
   container: Phaser.GameObjects.Container;
   hitbox: Phaser.GameObjects.Rectangle;
+  cellTextureVariants: number[];
   row: number;
   isDragging: boolean;
   returnX: number;
@@ -66,10 +70,22 @@ const bayBlock = {
   step: bay.cell,
 };
 
+const cellAssetVariants = 10;
+const cellTexturePrefix = "cell";
+const cellTextureUsages: CellTextureUsage[] = ["conveyor", "bay"];
+const cellAssetGroups: CellAssetGroup[] = [
+  "hazard",
+  "cargo-a",
+  "cargo-b",
+  "cargo-c",
+  "cargo-d",
+];
+
 const shapeDefinitions: ShapeDefinition[] = [
   {
     key: "forklift-prong",
     color: palette.cargoA,
+    assetGroup: "cargo-a",
     cells: [
       [0, 0],
       [1, 0],
@@ -81,6 +97,7 @@ const shapeDefinitions: ShapeDefinition[] = [
   {
     key: "dogleg-stack",
     color: palette.cargoB,
+    assetGroup: "cargo-b",
     cells: [
       [0, 0],
       [0, 1],
@@ -92,6 +109,7 @@ const shapeDefinitions: ShapeDefinition[] = [
   {
     key: "crooked-pallet",
     color: palette.cargoC,
+    assetGroup: "cargo-c",
     cells: [
       [0, 0],
       [1, 0],
@@ -103,6 +121,7 @@ const shapeDefinitions: ShapeDefinition[] = [
   {
     key: "square-pallet",
     color: palette.cargoD,
+    assetGroup: "cargo-d",
     cells: [
       [0, 0],
       [1, 0],
@@ -113,6 +132,7 @@ const shapeDefinitions: ShapeDefinition[] = [
   {
     key: "offset-tower",
     color: palette.cargoD,
+    assetGroup: "cargo-d",
     cells: [
       [0, 0],
       [1, 0],
@@ -124,6 +144,7 @@ const shapeDefinitions: ShapeDefinition[] = [
   {
     key: "broken-comb",
     color: palette.cargoB,
+    assetGroup: "cargo-b",
     cells: [
       [0, 0],
       [1, 0],
@@ -135,6 +156,7 @@ const shapeDefinitions: ShapeDefinition[] = [
   {
     key: "sidecar-stack",
     color: palette.cargoC,
+    assetGroup: "cargo-c",
     cells: [
       [0, 0],
       [0, 1],
@@ -146,6 +168,7 @@ const shapeDefinitions: ShapeDefinition[] = [
   {
     key: "canister-stack",
     color: palette.cargoC,
+    assetGroup: "cargo-c",
     cells: [
       [0, 0],
       [0, 1],
@@ -155,6 +178,7 @@ const shapeDefinitions: ShapeDefinition[] = [
   {
     key: "rail-bundle",
     color: palette.cargoA,
+    assetGroup: "cargo-a",
     cells: [
       [0, 0],
       [1, 0],
@@ -164,6 +188,7 @@ const shapeDefinitions: ShapeDefinition[] = [
   {
     key: "ratchet-crate",
     color: palette.cargoA,
+    assetGroup: "cargo-a",
     cells: [
       [0, 0],
       [1, 0],
@@ -175,6 +200,7 @@ const shapeDefinitions: ShapeDefinition[] = [
   {
     key: "hooked-canister",
     color: palette.hazard,
+    assetGroup: "hazard",
     cells: [
       [0, 0],
       [1, 0],
@@ -204,6 +230,20 @@ export class BootScene extends Phaser.Scene {
 
   constructor(private readonly mission: DockMission = defaultMission) {
     super("boot");
+  }
+
+  preload() {
+    for (const usage of cellTextureUsages) {
+      for (const group of cellAssetGroups) {
+        for (let variant = 1; variant <= cellAssetVariants; variant += 1) {
+          const variantId = variant.toString().padStart(2, "0");
+          this.load.image(
+            this.getCellTextureKey(usage, group, variant),
+            `/assets/cells/${usage}/${group}-${variantId}.png`,
+          );
+        }
+      }
+    }
   }
 
   create() {
@@ -354,6 +394,7 @@ export class BootScene extends Phaser.Scene {
 
     const definition = shapeDefinitions[this.nextShapeIndex];
     this.nextShapeIndex = (this.nextShapeIndex + 1) % shapeDefinitions.length;
+    const cellTextureVariants = this.createCellTextureVariants(definition);
 
     const container = this.createShapeContainer(
       definition,
@@ -361,6 +402,8 @@ export class BootScene extends Phaser.Scene {
       conveyor.rows[row],
       conveyorBlock.size,
       conveyorBlock.step,
+      "conveyor",
+      cellTextureVariants,
     );
     const bounds = this.getShapePixelBounds(
       definition,
@@ -374,6 +417,7 @@ export class BootScene extends Phaser.Scene {
       definition,
       container,
       hitbox,
+      cellTextureVariants,
       row,
       isDragging: false,
       returnX: hitbox.x,
@@ -391,23 +435,24 @@ export class BootScene extends Phaser.Scene {
     y: number,
     blockSize: number,
     blockStep: number,
+    textureUsage: CellTextureUsage,
+    cellTextureVariants: number[],
   ) {
     const bounds = this.getShapePixelBounds(definition, blockSize, blockStep);
     const container = this.add.container(x, y);
 
-    for (const [cellX, cellY] of definition.cells) {
+    for (const [index, [cellX, cellY]] of definition.cells.entries()) {
+      const textureKey = this.getCellTextureKey(
+        textureUsage,
+        definition.assetGroup,
+        cellTextureVariants[index],
+      );
+
       container.add(
         this.add
-          .rectangle(
-            cellX * blockStep,
-            cellY * blockStep,
-            blockSize,
-            blockSize,
-            definition.color,
-            0.95,
-          )
+          .image(cellX * blockStep, cellY * blockStep, textureKey)
           .setOrigin(0)
-          .setStrokeStyle(2, 0x050505, 0.9),
+          .setDisplaySize(blockSize, blockSize),
       );
     }
 
@@ -451,6 +496,20 @@ export class BootScene extends Phaser.Scene {
       width: maxX * blockStep + blockSize,
       height: maxY * blockStep + blockSize,
     };
+  }
+
+  private createCellTextureVariants(definition: ShapeDefinition) {
+    return definition.cells.map(() => Phaser.Math.Between(1, cellAssetVariants));
+  }
+
+  private getCellTextureKey(
+    usage: CellTextureUsage,
+    group: CellAssetGroup,
+    variant: number,
+  ) {
+    return `${cellTexturePrefix}-${usage}-${group}-${variant
+      .toString()
+      .padStart(2, "0")}`;
   }
 
   private despawnConveyorCargo() {
@@ -528,6 +587,7 @@ export class BootScene extends Phaser.Scene {
         this.removeConveyorCargo(cargo);
         this.dropCargoIntoBay(
           cargo.definition,
+          cargo.cellTextureVariants,
           placement.column,
           placement.row,
           pointer.y,
@@ -664,6 +724,7 @@ export class BootScene extends Phaser.Scene {
 
   private dropCargoIntoBay(
     definition: ShapeDefinition,
+    cellTextureVariants: number[],
     column: number,
     landingRow: number,
     pointerY: number,
@@ -679,6 +740,8 @@ export class BootScene extends Phaser.Scene {
       bay.y + startRow * bay.cell + 1,
       bayBlock.size,
       bayBlock.step,
+      "bay",
+      cellTextureVariants,
     );
     container.setDepth(10);
 

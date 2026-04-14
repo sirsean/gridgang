@@ -12,7 +12,8 @@ export function createGame(parent: string, mission: DockMission) {
     width: GAME_WIDTH,
     height: GAME_HEIGHT,
     backgroundColor: "#090909",
-    pixelArt: true,
+    antialias: true,
+    roundPixels: false,
     scale: {
       mode: Phaser.Scale.FIT,
       autoCenter: Phaser.Scale.CENTER_BOTH,
