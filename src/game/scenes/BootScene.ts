@@ -1,4 +1,5 @@
 import * as Phaser from "phaser";
+import { defaultMission, type DockMission } from "../missions";
 
 type CargoCell = [number, number];
 
@@ -201,7 +202,7 @@ export class BootScene extends Phaser.Scene {
   private scoreText?: Phaser.GameObjects.Text;
   private timerText?: Phaser.GameObjects.Text;
 
-  constructor() {
+  constructor(private readonly mission: DockMission = defaultMission) {
     super("boot");
   }
 
@@ -668,7 +669,7 @@ export class BootScene extends Phaser.Scene {
     pointerY: number,
   ) {
     this.reserveGridCells(definition, column, landingRow);
-    const scoreValue = definition.cells.length * 100;
+    const scoreValue = this.getScoreValue(definition);
 
     const releaseRow = Math.floor((pointerY - bay.y) / bay.cell);
     const startRow = Phaser.Math.Clamp(releaseRow, 0, landingRow);
@@ -711,8 +712,11 @@ export class BootScene extends Phaser.Scene {
     row: number,
   ) {
     this.score += value;
-    this.scoreText?.setText(`SCORE ${this.score.toString().padStart(6, "0")}`);
-    this.showScorePop(value, definition, column, row);
+    this.scoreText?.setText(`SCORE ${this.formatScore(this.score)}`);
+
+    if (value !== 0) {
+      this.showScorePop(value, definition, column, row);
+    }
 
     if (this.hasTopRowCargo()) {
       this.endGame();
@@ -729,7 +733,7 @@ export class BootScene extends Phaser.Scene {
     const x = bay.x + (column + bounds.centerX) * bay.cell;
     const y = bay.y + (row + bounds.centerY) * bay.cell;
     const pop = this.add
-      .text(x, y, `+${value}`, {
+      .text(x, y, this.formatScoreDelta(value), {
         align: "center",
         color: `#${definition.color.toString(16).padStart(6, "0")}`,
         fontFamily: "monospace",
@@ -764,6 +768,44 @@ export class BootScene extends Phaser.Scene {
     };
   }
 
+  private getScoreValue(definition: ShapeDefinition) {
+    const baseScore = definition.cells.length * 100;
+    const isRed = definition.color === palette.hazard;
+    const isYellow = definition.color === palette.cargoC;
+    const isTeal = definition.color === palette.cargoB;
+    const isGrey =
+      definition.color === palette.cargoA || definition.color === palette.cargoD;
+    const isSmall = definition.cells.length <= 4;
+    const isLarge = definition.cells.length >= 5;
+
+    switch (this.mission.scoringRule) {
+      case "red-only":
+        return isRed ? baseScore : 0;
+      case "yellow-penalty":
+        return isYellow ? -baseScore : baseScore;
+      case "yellow-only":
+        return isYellow ? baseScore : 0;
+      case "teal-only":
+        return isTeal ? baseScore : 0;
+      case "grey-only":
+        return isGrey ? baseScore : 0;
+      case "red-penalty":
+        return isRed ? -baseScore : baseScore;
+      case "non-red-only":
+        return isRed ? 0 : baseScore;
+      case "small-double":
+        return isSmall ? baseScore * 2 : baseScore;
+      case "large-double":
+        return isLarge ? baseScore * 2 : baseScore;
+      case "small-penalty":
+        return isSmall ? -baseScore : baseScore;
+      case "half-manifest":
+        return Math.floor(baseScore / 2);
+      case "standard":
+        return baseScore;
+    }
+  }
+
   private hasTopRowCargo() {
     return this.cargoGrid[0].some((cell) => cell !== null);
   }
@@ -793,7 +835,7 @@ export class BootScene extends Phaser.Scene {
       .text(
         360,
         618,
-        `RUN COMPLETE\nFINAL SCORE ${this.score.toString().padStart(6, "0")}`,
+        `RUN COMPLETE\nFINAL SCORE ${this.formatScore(this.score)}`,
         {
           align: "center",
           color: "#f1f1e6",
@@ -850,7 +892,7 @@ export class BootScene extends Phaser.Scene {
       .setDepth(30);
 
     this.scoreText = this.add
-      .text(136, 928, "SCORE 000000", {
+      .text(136, 928, `SCORE ${this.formatScore(this.score)}`, {
         align: "left",
         fontFamily: "monospace",
         fontSize: "22px",
@@ -883,6 +925,16 @@ export class BootScene extends Phaser.Scene {
     const seconds = totalSeconds % 60;
 
     return `${minutes}:${seconds.toString().padStart(2, "0")}`;
+  }
+
+  private formatScore(value: number) {
+    const sign = value < 0 ? "-" : "";
+
+    return `${sign}${Math.abs(value).toString().padStart(6, "0")}`;
+  }
+
+  private formatScoreDelta(value: number) {
+    return value > 0 ? `+${value}` : value.toString();
   }
 
   private getTimerColor() {

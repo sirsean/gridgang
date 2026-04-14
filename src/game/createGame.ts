@@ -1,10 +1,11 @@
 import * as Phaser from "phaser";
+import type { DockMission } from "./missions";
 import { BootScene } from "./scenes/BootScene";
 
 const GAME_WIDTH = 720;
 const GAME_HEIGHT = 960;
 
-export function createGame(parent: string) {
+export function createGame(parent: string, mission: DockMission) {
   return new Phaser.Game({
     type: Phaser.AUTO,
     parent,
@@ -16,6 +17,6 @@ export function createGame(parent: string) {
       mode: Phaser.Scale.FIT,
       autoCenter: Phaser.Scale.CENTER_BOTH,
     },
-    scene: [BootScene],
+    scene: [new BootScene(mission)],
   });
 }

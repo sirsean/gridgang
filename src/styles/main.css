@@ -53,12 +53,12 @@ body {
 
 .home-screen {
   display: grid;
-  width: min(720px, 100%);
+  width: min(820px, 100%);
   min-height: 100vh;
   min-height: 100dvh;
   align-content: center;
   justify-items: center;
-  gap: 18px;
+  gap: 16px;
   padding: 24px;
   text-align: center;
 }
@@ -87,6 +87,64 @@ body {
 
 .primary-action:hover,
 .primary-action:focus-visible {
+  border-color: #f1f1e6;
+  outline: none;
+  background: #252525;
+}
+
+.mission-list {
+  display: grid;
+  width: min(680px, 100%);
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+  margin-top: 12px;
+}
+
+.mission-card {
+  display: grid;
+  min-height: 190px;
+  align-content: start;
+  gap: 12px;
+  padding: 16px;
+  border: 1px solid #4f5658;
+  border-radius: 6px;
+  background:
+    linear-gradient(180deg, rgba(37, 37, 37, 0.86), rgba(11, 11, 11, 0.94)),
+    #161616;
+  text-align: left;
+}
+
+.mission-card h2 {
+  margin: 0;
+  color: #f1f1e6;
+  font-size: 1.15rem;
+  line-height: 1.1;
+  text-transform: uppercase;
+}
+
+.mission-summary {
+  min-height: 42px;
+  margin: 0;
+  color: #c7d0cc;
+  font-size: 0.95rem;
+  line-height: 1.45;
+}
+
+.mission-action {
+  min-height: 42px;
+  margin-top: auto;
+  border: 2px solid #c4a15a;
+  border-radius: 6px;
+  color: #f1f1e6;
+  background: #161616;
+  font: inherit;
+  font-size: 0.95rem;
+  text-transform: uppercase;
+  cursor: pointer;
+}
+
+.mission-action:hover,
+.mission-action:focus-visible {
   border-color: #f1f1e6;
   outline: none;
   background: #252525;
@@ -153,4 +211,20 @@ h1 {
   margin-inline: auto;
   border: 1px solid #4f5658;
   background: #090909;
+}
+
+@media (max-width: 620px) {
+  .home-screen {
+    align-content: start;
+    padding-block: 28px;
+  }
+
+  .home-mark {
+    width: 132px;
+    height: 132px;
+  }
+
+  .mission-list {
+    grid-template-columns: 1fr;
+  }
 }
