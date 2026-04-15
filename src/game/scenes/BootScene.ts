@@ -22,6 +22,8 @@ type ConveyorCargo = {
   isDragging: boolean;
   returnX: number;
   returnY: number;
+  grabCellOffsetX: number;
+  grabCellOffsetY: number;
 };
 
 const palette = {
@@ -422,6 +424,8 @@ export class BootScene extends Phaser.Scene {
       isDragging: false,
       returnX: hitbox.x,
       returnY: hitbox.y,
+      grabCellOffsetX: 0,
+      grabCellOffsetY: 0,
     };
     this.nextCargoId += 1;
 
@@ -526,7 +530,7 @@ export class BootScene extends Phaser.Scene {
   }
 
   private handleDragStart(
-    _pointer: Phaser.Input.Pointer,
+    pointer: Phaser.Input.Pointer,
     gameObject: Phaser.GameObjects.GameObject,
   ) {
     const cargo = this.getCargoForGameObject(gameObject);
@@ -538,6 +542,18 @@ export class BootScene extends Phaser.Scene {
     cargo.isDragging = true;
     cargo.returnX = cargo.hitbox.x;
     cargo.returnY = cargo.hitbox.y;
+    cargo.grabCellOffsetX = this.getGrabCellOffset(
+      pointer.x,
+      cargo.container.x,
+      conveyorBlock.step,
+      this.getShapeCellWidth(cargo.definition),
+    );
+    cargo.grabCellOffsetY = this.getGrabCellOffset(
+      pointer.y,
+      cargo.container.y,
+      conveyorBlock.step,
+      this.getShapeCellHeight(cargo.definition),
+    );
     cargo.hitbox.setDepth(21);
     cargo.container.setDepth(20);
     cargo.container.setAlpha(0.82);
@@ -581,7 +597,7 @@ export class BootScene extends Phaser.Scene {
     cargo.hitbox.setDepth(5);
 
     if (this.isPointInsideBay(pointer.x, pointer.y)) {
-      const placement = this.findDropPlacement(cargo.definition, pointer.x);
+      const placement = this.findDropPlacement(cargo, pointer.x);
 
       if (placement) {
         this.removeConveyorCargo(cargo);
@@ -629,7 +645,7 @@ export class BootScene extends Phaser.Scene {
       return;
     }
 
-    const placement = this.findDropPlacement(cargo.definition, pointerX);
+    const placement = this.findDropPlacement(cargo, pointerX);
 
     if (!placement) {
       return;
@@ -686,10 +702,12 @@ export class BootScene extends Phaser.Scene {
     this.dropColumnPreview = [];
   }
 
-  private findDropPlacement(definition: ShapeDefinition, pointerX: number) {
+  private findDropPlacement(cargo: ConveyorCargo, pointerX: number) {
+    const { definition } = cargo;
     const shapeWidth = this.getShapeCellWidth(definition);
-    const centeredColumn = Math.floor((pointerX - bay.x) / bay.cell - shapeWidth / 2);
-    const column = Phaser.Math.Clamp(centeredColumn, 0, bay.columns - shapeWidth);
+    const grabbedColumn = Math.floor((pointerX - bay.x) / bay.cell);
+    const anchoredColumn = grabbedColumn - cargo.grabCellOffsetX;
+    const column = Phaser.Math.Clamp(anchoredColumn, 0, bay.columns - shapeWidth);
 
     if (!this.canPlaceShape(definition, column, 0)) {
       return null;
@@ -946,6 +964,21 @@ export class BootScene extends Phaser.Scene {
 
   private getShapeCellWidth(definition: ShapeDefinition) {
     return Math.max(...definition.cells.map(([cellX]) => cellX)) + 1;
+  }
+
+  private getShapeCellHeight(definition: ShapeDefinition) {
+    return Math.max(...definition.cells.map(([, cellY]) => cellY)) + 1;
+  }
+
+  private getGrabCellOffset(
+    pointerPosition: number,
+    containerPosition: number,
+    blockStep: number,
+    maxCells: number,
+  ) {
+    const offset = Math.floor((pointerPosition - containerPosition) / blockStep);
+
+    return Phaser.Math.Clamp(offset, 0, maxCells - 1);
   }
 
   private drawHud() {
