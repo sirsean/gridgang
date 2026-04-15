@@ -58,6 +58,21 @@ npm run assets:audio -- --only conveyor-creak-loop,container-land
 npm run assets:audio -- --force
 ```
 
+Generate homepage image assets with OpenAI:
+
+```sh
+OPENAI_API_KEY=<your_api_key_here> npm run assets:home
+```
+
+The script also reads `OPENAI_API_KEY` from `.env`, which is ignored by git.
+Useful options:
+
+```sh
+npm run assets:home -- --dry-run
+npm run assets:home -- --only dock-control-wall,mechanical-button
+npm run assets:home -- --force
+```
+
 Deploy to Cloudflare Workers:
 
 ```sh

@@ -1,0 +1,32 @@
+{
+  "generatedAt": "2026-04-15T21:35:59.651Z",
+  "model": "gpt-image-1.5",
+  "quality": "low",
+  "source": "OpenAI images API",
+  "files": [
+    {
+      "file": "public/assets/home/dock-control-wall.png",
+      "id": "dock-control-wall",
+      "prompt": "Use case: stylized-concept\nAsset type: homepage full-bleed background for a 2D browser game\nPrimary request: cassette retro-futurist Grid Gang cargo dock control wall, old industrial docking lattice, massive cargo handling hardware, no people\nScene/backdrop: grimy spaceport dock interior where massive containers move through tight mechanical lanes, inspired by dock workers handling leviathan cargo lattices\nStyle/medium: gritty painted game background, retro cassette futurism, industrial sci-fi, not a clean modern website render\nComposition/framing: wide landscape wall with dark usable center area for UI, heavy machinery around edges, believable depth but not photoreal\nLighting/mood: dim work lights, flickering amber and red LEDs, dirty shadows, old CRT glow, high mortality cargo yard mood\nColor palette: black oil, oxidized grey metal, hazard red, aged amber, pale teal status lights, soot and rust\nMaterials/textures: rusted steel, worn rubber, scratched plastic labels with no readable text, grease, dust, rivets, bolts, taped repairs, chipped paint\nConstraints: no readable text, no letters, no numbers, no logos, no watermark, no rounded UI cards, no clean neon gradients\nAvoid: sleek modern sci-fi, purple gradients, glossy Apple-like surfaces, pristine spaceship bridge, luxury UI, humans, characters",
+      "status": "generated"
+    },
+    {
+      "file": "public/assets/home/mission-terminal-panel.png",
+      "id": "mission-terminal-panel",
+      "prompt": "Use case: stylized-concept\nAsset type: repeatable square metal panel texture for mission cards\nPrimary request: old heavy-duty cargo terminal panel surface, cassette retro-futurist, rusted and grimy\nStyle/medium: gritty hand-painted game UI texture, readable as a background under text\nComposition/framing: square flat-on panel, edge-to-edge texture, subtle recessed seams, bolts near corners, no central illustration\nLighting/mood: dim industrial lighting, worn metal highlights, dirty amber LED spill\nColor palette: dark steel, oxidized grey, black grease, rust red scratches, muted amber status light stains\nMaterials/textures: dented sheet metal, rivets, scraped paint, old rubber gasket edges, dust, grime, oil streaks\nConstraints: low contrast in the center so white text remains readable, no readable text, no letters, no numbers, no logo, no watermark, no rounded corners\nAvoid: clean sci-fi panels, glowing neon frame, modern card UI, beige palette, purple palette",
+      "status": "generated"
+    },
+    {
+      "file": "public/assets/home/mechanical-button.png",
+      "id": "mechanical-button",
+      "prompt": "Use case: stylized-concept\nAsset type: wide mechanical button texture for a browser game start button\nPrimary request: big old industrial cargo dock button, rectangular and heavy, cassette retro-futurist, no text\nStyle/medium: gritty painted UI asset, old mechanical hardware, not photoreal\nComposition/framing: wide horizontal rectangular button plate, centered, edge-to-edge, square corners, heavy metal rim, recessed dark face\nLighting/mood: amber indicator glow, worn highlights on edges, dark oily shadows\nColor palette: blackened steel, dark rubber, rust, hazard red wear marks, aged amber glow\nMaterials/textures: scratched metal, grime, chipped paint, screw heads, grease, pressed rubber center\nConstraints: no text, no letters, no numbers, no logos, no watermark, no rounded corners, button face must have room for overlaid text\nAvoid: glossy plastic web button, pill shape, soft rounded UI, clean neon gradient, beige palette, purple palette",
+      "status": "generated"
+    },
+    {
+      "file": "public/assets/home/led-status-strip.png",
+      "id": "led-status-strip",
+      "prompt": "Use case: stylized-concept\nAsset type: narrow decorative LED strip for a retro-futurist game homepage\nPrimary request: row of old flickering status LEDs mounted into a grimy metal strip, no text\nStyle/medium: gritty painted UI texture, cassette retro-futurist industrial hardware\nComposition/framing: long horizontal strip, edge-to-edge, small square and round LEDs embedded in old metal, mostly dark background\nLighting/mood: uneven flickering red, amber, and pale teal LEDs, dirty glow, worn black metal\nColor palette: dark steel, black rubber, amber, red, pale teal, rust, soot\nMaterials/textures: corroded metal, dust, scratches, screw heads, old plastic LED lenses\nConstraints: no readable text, no letters, no numbers, no logos, no watermark, no rounded web UI\nAvoid: modern RGB gamer lighting, purple glow, clean electronics product render, smooth glass",
+      "status": "generated"
+    }
+  ]
+}
