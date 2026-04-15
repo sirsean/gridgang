@@ -102,7 +102,7 @@ body {
 
 .mission-card {
   display: grid;
-  min-height: 190px;
+  min-height: 260px;
   align-content: start;
   gap: 12px;
   padding: 16px;
@@ -128,6 +128,47 @@ body {
   color: #c7d0cc;
   font-size: 0.95rem;
   line-height: 1.45;
+}
+
+.mission-scores {
+  display: grid;
+  gap: 6px;
+  padding-top: 4px;
+  border-top: 1px solid rgba(127, 140, 141, 0.42);
+}
+
+.mission-scores-title,
+.mission-scores-empty {
+  margin: 0;
+  color: #c4a15a;
+  font-size: 0.8rem;
+  text-transform: uppercase;
+}
+
+.mission-scores-empty {
+  color: #7f8c8d;
+  text-transform: none;
+}
+
+.mission-score-list {
+  display: grid;
+  gap: 4px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  color: #c7d0cc;
+  font-size: 0.8rem;
+}
+
+.mission-score-list li {
+  display: flex;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.mission-score-list time {
+  color: #9b9b9b;
+  text-align: right;
 }
 
 .mission-action {

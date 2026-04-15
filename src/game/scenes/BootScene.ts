@@ -1,5 +1,6 @@
 import * as Phaser from "phaser";
 import { SoundFx } from "../audio/SoundFx";
+import { getTopHighScore, recordHighScore } from "../highScores";
 import { defaultMission, type DockMission } from "../missions";
 
 type CargoCell = [number, number];
@@ -246,6 +247,7 @@ export class BootScene extends Phaser.Scene {
   private dropPreview: Phaser.GameObjects.Rectangle[] = [];
   private dropColumnPreview: Phaser.GameObjects.Rectangle[] = [];
   private scoreText?: Phaser.GameObjects.Text;
+  private topScoreText?: Phaser.GameObjects.Text;
   private timerText?: Phaser.GameObjects.Text;
 
   constructor(private readonly mission: DockMission = defaultMission) {
@@ -852,7 +854,7 @@ export class BootScene extends Phaser.Scene {
     const bonusValue = bonuses.reduce((total, bonus) => total + bonus.value, 0);
 
     this.score += value + bonusValue;
-    this.scoreText?.setText(`SCORE ${this.formatScore(this.score)}`);
+    this.updateScoreText();
 
     if (value !== 0) {
       this.showScorePop(value, definition, column, row);
@@ -1114,6 +1116,10 @@ export class BootScene extends Phaser.Scene {
     this.activeDrag = undefined;
     this.clearDropPreview();
     this.soundFx.gameOver();
+    const previousBest = getTopHighScore(this.mission.dock);
+    const isNewBest = !previousBest || this.score > previousBest.score;
+    recordHighScore(this.mission.dock, this.score);
+    this.updateScoreText();
 
     for (const cargo of this.conveyorCargo) {
       cargo.isDragging = false;
@@ -1131,7 +1137,13 @@ export class BootScene extends Phaser.Scene {
       .text(
         360,
         618,
-        `RUN COMPLETE\nFINAL SCORE ${this.formatScore(this.score)}`,
+        [
+          "RUN COMPLETE",
+          `FINAL SCORE ${this.formatScore(this.score)}`,
+          isNewBest
+            ? "NEW DOCK RECORD"
+            : `DOCK BEST ${this.formatScore(previousBest.score)}`,
+        ].join("\n"),
         {
           align: "center",
           color: "#f1f1e6",
@@ -1213,6 +1225,17 @@ export class BootScene extends Phaser.Scene {
       .setDepth(31)
       .setResolution(2);
 
+    this.topScoreText = this.add
+      .text(360, 928, this.getTopScoreLabel(), {
+        align: "center",
+        fontFamily: "monospace",
+        fontSize: "18px",
+        color: "#c4a15a",
+      })
+      .setOrigin(0.5)
+      .setDepth(31)
+      .setResolution(2);
+
     this.timerText = this.add
       .text(584, 928, this.formatTime(this.timeRemainingMs), {
         align: "right",
@@ -1223,6 +1246,21 @@ export class BootScene extends Phaser.Scene {
       .setOrigin(1, 0.5)
       .setDepth(31)
       .setResolution(2);
+  }
+
+  private updateScoreText() {
+    this.scoreText?.setText(`SCORE ${this.formatScore(this.score)}`);
+    this.topScoreText?.setText(this.getTopScoreLabel());
+  }
+
+  private getTopScoreLabel() {
+    const topScore = getTopHighScore(this.mission.dock);
+
+    if (!topScore) {
+      return this.score === 0 ? "BEST ------" : `BEST ${this.formatScore(this.score)}`;
+    }
+
+    return `BEST ${this.formatScore(Math.max(this.score, topScore.score))}`;
   }
 
   private updateTimerText() {
