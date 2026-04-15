@@ -48,6 +48,14 @@ const palette = {
   previewCell: 0xc4a15a,
 };
 
+const cargoStyles: Array<{ color: number; assetGroup: CellAssetGroup }> = [
+  { color: palette.hazard, assetGroup: "hazard" },
+  { color: palette.cargoA, assetGroup: "cargo-a" },
+  { color: palette.cargoB, assetGroup: "cargo-b" },
+  { color: palette.cargoC, assetGroup: "cargo-c" },
+  { color: palette.cargoD, assetGroup: "cargo-d" },
+];
+
 const conveyor = {
   x: 80,
   y: 32,
@@ -100,6 +108,7 @@ const cellAssetGroups: CellAssetGroup[] = [
 
 // Five 3x3 bottom-profile pairs. Four full catalog cycles can tile the 12x15 bay.
 // Each plug occupies top-accessible cells so gravity can fill the paired gaps.
+// Color is randomized per spawn, so profile matches are common but color matches are not.
 const shapeDefinitions: ShapeDefinition[] = [
   {
     key: "rising-step-socket",
@@ -401,7 +410,9 @@ export class BootScene extends Phaser.Scene {
       return;
     }
 
-    const definition = shapeDefinitions[this.nextShapeIndex];
+    const definition = this.createSpawnDefinition(
+      shapeDefinitions[this.nextShapeIndex],
+    );
     this.nextShapeIndex = (this.nextShapeIndex + 1) % shapeDefinitions.length;
     const cellTextureVariants = this.createCellTextureVariants(definition);
 
@@ -438,6 +449,16 @@ export class BootScene extends Phaser.Scene {
 
     this.conveyorCargo.push(cargo);
     this.cargoByHitbox.set(hitbox, cargo);
+  }
+
+  private createSpawnDefinition(baseDefinition: ShapeDefinition) {
+    const style = Phaser.Utils.Array.GetRandom(cargoStyles);
+
+    return {
+      ...baseDefinition,
+      color: style.color,
+      assetGroup: style.assetGroup,
+    };
   }
 
   private createShapeContainer(
