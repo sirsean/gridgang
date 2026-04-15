@@ -26,6 +26,14 @@ type ConveyorCargo = {
   grabCellOffsetY: number;
 };
 
+type ScoreBonus = {
+  label: string;
+  value: number;
+  color: number;
+  x: number;
+  y: number;
+};
+
 const palette = {
   background: 0x090909,
   grid: 0x2d3436,
@@ -72,6 +80,13 @@ const bayBlock = {
   step: bay.cell,
 };
 
+const bonusScoring = {
+  tileSize: 3,
+  sameColorTile: 1500,
+  rowBase: 1000,
+  rowStep: 500,
+};
+
 const cellAssetVariants = 10;
 const cellTexturePrefix = "cell";
 const cellTextureUsages: CellTextureUsage[] = ["conveyor", "bay"];
@@ -101,8 +116,8 @@ const shapeDefinitions: ShapeDefinition[] = [
   },
   {
     key: "rising-step-plug",
-    color: palette.cargoB,
-    assetGroup: "cargo-b",
+    color: palette.cargoA,
+    assetGroup: "cargo-a",
     cells: [
       [0, 0],
       [0, 1],
@@ -111,8 +126,8 @@ const shapeDefinitions: ShapeDefinition[] = [
   },
   {
     key: "falling-step-socket",
-    color: palette.cargoC,
-    assetGroup: "cargo-c",
+    color: palette.cargoB,
+    assetGroup: "cargo-b",
     cells: [
       [0, 0],
       [0, 1],
@@ -124,8 +139,8 @@ const shapeDefinitions: ShapeDefinition[] = [
   },
   {
     key: "falling-step-plug",
-    color: palette.cargoD,
-    assetGroup: "cargo-d",
+    color: palette.cargoB,
+    assetGroup: "cargo-b",
     cells: [
       [1, 0],
       [2, 1],
@@ -134,8 +149,8 @@ const shapeDefinitions: ShapeDefinition[] = [
   },
   {
     key: "center-cradle-socket",
-    color: palette.cargoD,
-    assetGroup: "cargo-d",
+    color: palette.cargoC,
+    assetGroup: "cargo-c",
     cells: [
       [0, 1],
       [0, 2],
@@ -147,8 +162,8 @@ const shapeDefinitions: ShapeDefinition[] = [
   },
   {
     key: "center-cradle-plug",
-    color: palette.cargoA,
-    assetGroup: "cargo-a",
+    color: palette.cargoC,
+    assetGroup: "cargo-c",
     cells: [
       [0, 0],
       [1, 0],
@@ -170,8 +185,8 @@ const shapeDefinitions: ShapeDefinition[] = [
   },
   {
     key: "offset-cradle-plug",
-    color: palette.cargoB,
-    assetGroup: "cargo-b",
+    color: palette.hazard,
+    assetGroup: "hazard",
     cells: [
       [1, 0],
       [1, 1],
@@ -193,8 +208,8 @@ const shapeDefinitions: ShapeDefinition[] = [
   },
   {
     key: "flat-bed-plug",
-    color: palette.cargoC,
-    assetGroup: "cargo-c",
+    color: palette.cargoD,
+    assetGroup: "cargo-d",
     cells: [
       [0, 0],
       [1, 0],
@@ -215,6 +230,8 @@ export class BootScene extends Phaser.Scene {
   private score = 0;
   private timeRemainingMs = 90_000;
   private isGameOver = false;
+  private scoredTileKeys = new Set<string>();
+  private scoredRows = new Set<number>();
   private dropPreview: Phaser.GameObjects.Rectangle[] = [];
   private dropColumnPreview: Phaser.GameObjects.Rectangle[] = [];
   private scoreText?: Phaser.GameObjects.Text;
@@ -739,6 +756,7 @@ export class BootScene extends Phaser.Scene {
   ) {
     this.reserveGridCells(definition, column, landingRow);
     const scoreValue = this.getScoreValue(definition);
+    const scoreBonuses = this.collectScoreBonuses(definition, column, landingRow);
 
     const releaseRow = Math.floor((pointerY - bay.y) / bay.cell);
     const startRow = Phaser.Math.Clamp(releaseRow, 0, landingRow);
@@ -761,7 +779,13 @@ export class BootScene extends Phaser.Scene {
       ease: "Quad.easeIn",
       onComplete: () => {
         container.setDepth(4);
-        this.awardScore(scoreValue, definition, column, landingRow);
+        this.awardScore(
+          scoreValue,
+          definition,
+          column,
+          landingRow,
+          scoreBonuses,
+        );
       },
     });
   }
@@ -781,12 +805,19 @@ export class BootScene extends Phaser.Scene {
     definition: ShapeDefinition,
     column: number,
     row: number,
+    bonuses: ScoreBonus[],
   ) {
-    this.score += value;
+    const bonusValue = bonuses.reduce((total, bonus) => total + bonus.value, 0);
+
+    this.score += value + bonusValue;
     this.scoreText?.setText(`SCORE ${this.formatScore(this.score)}`);
 
     if (value !== 0) {
       this.showScorePop(value, definition, column, row);
+    }
+
+    for (const bonus of bonuses) {
+      this.showBonusPop(bonus);
     }
 
     if (this.hasTopRowCargo()) {
@@ -829,6 +860,33 @@ export class BootScene extends Phaser.Scene {
     });
   }
 
+  private showBonusPop(bonus: ScoreBonus) {
+    const pop = this.add
+      .text(bonus.x, bonus.y, `+${bonus.value} ${bonus.label}`, {
+        align: "center",
+        color: `#${bonus.color.toString(16).padStart(6, "0")}`,
+        fontFamily: "monospace",
+        fontSize: "24px",
+        stroke: "#050505",
+        strokeThickness: 6,
+      })
+      .setOrigin(0.5)
+      .setDepth(41)
+      .setResolution(2);
+
+    this.tweens.add({
+      targets: pop,
+      alpha: 0,
+      scale: 1.32,
+      y: bonus.y - 36,
+      duration: 900,
+      ease: "Quad.easeOut",
+      onComplete: () => {
+        pop.destroy();
+      },
+    });
+  }
+
   private getShapeCellBounds(definition: ShapeDefinition) {
     const maxX = Math.max(...definition.cells.map(([cellX]) => cellX));
     const maxY = Math.max(...definition.cells.map(([, cellY]) => cellY));
@@ -837,6 +895,120 @@ export class BootScene extends Phaser.Scene {
       centerX: (maxX + 1) / 2,
       centerY: (maxY + 1) / 2,
     };
+  }
+
+  private collectScoreBonuses(
+    definition: ShapeDefinition,
+    column: number,
+    row: number,
+  ) {
+    return [
+      ...this.collectSameColorTileBonuses(definition, column, row),
+      ...this.collectFullRowBonuses(),
+    ];
+  }
+
+  private collectSameColorTileBonuses(
+    definition: ShapeDefinition,
+    column: number,
+    row: number,
+  ) {
+    const bonuses: ScoreBonus[] = [];
+    const touchedTileKeys = new Set<string>();
+    const tileSize = bonusScoring.tileSize;
+
+    for (const [cellX, cellY] of definition.cells) {
+      const gridX = column + cellX;
+      const gridY = row + cellY;
+      const tileColumn = Math.floor(gridX / tileSize) * tileSize;
+      const tileRow = Math.floor(gridY / tileSize) * tileSize;
+      const tileKey = this.getTileKey(tileColumn, tileRow);
+
+      if (touchedTileKeys.has(tileKey) || this.scoredTileKeys.has(tileKey)) {
+        continue;
+      }
+
+      touchedTileKeys.add(tileKey);
+
+      const tileColor = this.getSameColorTile(tileColumn, tileRow);
+
+      if (tileColor === null) {
+        continue;
+      }
+
+      this.scoredTileKeys.add(tileKey);
+      bonuses.push({
+        label: "3X3",
+        value: bonusScoring.sameColorTile,
+        color: tileColor,
+        x: bay.x + (tileColumn + tileSize / 2) * bay.cell,
+        y: bay.y + (tileRow + tileSize / 2) * bay.cell,
+      });
+    }
+
+    return bonuses;
+  }
+
+  private getSameColorTile(tileColumn: number, tileRow: number) {
+    const tileSize = bonusScoring.tileSize;
+
+    if (tileColumn + tileSize > bay.columns || tileRow + tileSize > bay.rows) {
+      return null;
+    }
+
+    const tileColor = this.cargoGrid[tileRow][tileColumn];
+
+    if (tileColor === null) {
+      return null;
+    }
+
+    for (let rowOffset = 0; rowOffset < tileSize; rowOffset += 1) {
+      for (let columnOffset = 0; columnOffset < tileSize; columnOffset += 1) {
+        if (
+          this.cargoGrid[tileRow + rowOffset][tileColumn + columnOffset] !==
+          tileColor
+        ) {
+          return null;
+        }
+      }
+    }
+
+    return tileColor;
+  }
+
+  private collectFullRowBonuses() {
+    const bonuses: ScoreBonus[] = [];
+    const newlyCompletedRows = this.cargoGrid
+      .map((_, row) => row)
+      .filter((row) => !this.scoredRows.has(row) && this.isRowFull(row));
+
+    for (const [index, row] of newlyCompletedRows.entries()) {
+      const completedRowCount = this.scoredRows.size + index + 1;
+      const value =
+        bonusScoring.rowBase + (completedRowCount - 1) * bonusScoring.rowStep;
+
+      bonuses.push({
+        label: `ROW ${completedRowCount}`,
+        value,
+        color: palette.previewCell,
+        x: bay.x + (bay.columns * bay.cell) / 2,
+        y: bay.y + row * bay.cell + bay.cell / 2,
+      });
+    }
+
+    for (const row of newlyCompletedRows) {
+      this.scoredRows.add(row);
+    }
+
+    return bonuses;
+  }
+
+  private isRowFull(row: number) {
+    return this.cargoGrid[row].every((cell) => cell !== null);
+  }
+
+  private getTileKey(tileColumn: number, tileRow: number) {
+    return `${tileColumn}:${tileRow}`;
   }
 
   private getScoreValue(definition: ShapeDefinition) {
