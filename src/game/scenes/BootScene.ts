@@ -1,4 +1,5 @@
 import * as Phaser from "phaser";
+import { SoundFx } from "../audio/SoundFx";
 import { defaultMission, type DockMission } from "../missions";
 
 type CargoCell = [number, number];
@@ -238,6 +239,7 @@ export class BootScene extends Phaser.Scene {
   private spawnElapsed = 0;
   private score = 0;
   private timeRemainingMs = 90_000;
+  private soundFx = new SoundFx();
   private isGameOver = false;
   private scoredTileKeys = new Set<string>();
   private scoredRows = new Set<number>();
@@ -276,9 +278,16 @@ export class BootScene extends Phaser.Scene {
     this.seedConveyor();
     this.drawHud();
 
+    this.soundFx.startConveyor();
+    this.input.on("pointerdown", () => {
+      this.soundFx.resume();
+    });
     this.input.on("dragstart", this.handleDragStart, this);
     this.input.on("drag", this.handleDrag, this);
     this.input.on("dragend", this.handleDragEnd, this);
+    this.events.once("shutdown", () => {
+      this.soundFx.destroy();
+    });
   }
 
   update(_time: number, delta: number) {
@@ -286,8 +295,10 @@ export class BootScene extends Phaser.Scene {
       return;
     }
 
+    const previousTimeRemainingMs = this.timeRemainingMs;
     this.timeRemainingMs = Math.max(0, this.timeRemainingMs - delta);
     this.updateTimerText();
+    this.updateClockTick(previousTimeRemainingMs, this.timeRemainingMs);
 
     if (this.timeRemainingMs <= 0) {
       this.endGame();
@@ -567,6 +578,7 @@ export class BootScene extends Phaser.Scene {
       return;
     }
 
+    this.soundFx.grab();
     cargo.isDragging = true;
     cargo.returnX = cargo.hitbox.x;
     cargo.returnY = cargo.hitbox.y;
@@ -605,6 +617,7 @@ export class BootScene extends Phaser.Scene {
       dragX + conveyorBlock.hitPadding,
       dragY + conveyorBlock.hitPadding,
     );
+    this.soundFx.drag();
     this.updateDropPreview(cargo, _pointer.x, _pointer.y);
   }
 
@@ -620,6 +633,7 @@ export class BootScene extends Phaser.Scene {
 
     this.activeDrag = undefined;
     this.clearDropPreview();
+    this.soundFx.drop();
 
     cargo.container.setAlpha(1);
     cargo.hitbox.setDepth(5);
@@ -793,12 +807,16 @@ export class BootScene extends Phaser.Scene {
     container.setDepth(10);
 
     const landingY = bay.y + landingRow * bay.cell + 1;
+    const dropDuration = Math.max(160, landingRow * 42);
+    const stopFallSound = this.soundFx.fall(dropDuration);
     this.tweens.add({
       targets: container,
       y: landingY,
-      duration: Math.max(160, landingRow * 42),
+      duration: dropDuration,
       ease: "Quad.easeIn",
       onComplete: () => {
+        stopFallSound();
+        this.soundFx.land();
         container.setDepth(4);
         this.awardScore(
           scoreValue,
@@ -835,6 +853,10 @@ export class BootScene extends Phaser.Scene {
 
     if (value !== 0) {
       this.showScorePop(value, definition, column, row);
+    }
+
+    if (value > 0) {
+      this.soundFx.score();
     }
 
     for (const bonus of bonuses) {
@@ -882,6 +904,12 @@ export class BootScene extends Phaser.Scene {
   }
 
   private showBonusPop(bonus: ScoreBonus) {
+    if (bonus.label === "3X3") {
+      this.soundFx.socketBonus();
+    } else {
+      this.soundFx.bonus();
+    }
+
     const pop = this.add
       .text(bonus.x, bonus.y, `+${bonus.value} ${bonus.label}`, {
         align: "center",
@@ -1082,6 +1110,7 @@ export class BootScene extends Phaser.Scene {
     this.isGameOver = true;
     this.activeDrag = undefined;
     this.clearDropPreview();
+    this.soundFx.gameOver();
 
     for (const cargo of this.conveyorCargo) {
       cargo.isDragging = false;
@@ -1196,6 +1225,29 @@ export class BootScene extends Phaser.Scene {
   private updateTimerText() {
     this.timerText?.setText(this.formatTime(this.timeRemainingMs));
     this.timerText?.setColor(this.getTimerColor());
+  }
+
+  private updateClockTick(previousMilliseconds: number, currentMilliseconds: number) {
+    const previousSecond = Math.ceil(previousMilliseconds / 1000);
+    const currentSecond = Math.ceil(currentMilliseconds / 1000);
+
+    if (currentSecond >= previousSecond) {
+      return;
+    }
+
+    for (let second = previousSecond - 1; second >= currentSecond; second -= 1) {
+      if (second <= 0) {
+        continue;
+      }
+
+      if (second <= 10) {
+        this.soundFx.clockTick("red");
+      } else if (second <= 30) {
+        this.soundFx.clockTick("amber");
+      } else if (second % 10 === 0) {
+        this.soundFx.clockTick("normal");
+      }
+    }
   }
 
   private formatTime(milliseconds: number) {
