@@ -1,12 +1,42 @@
+import * as Phaser from "phaser";
+
 type ClockTickMode = "normal" | "amber" | "red";
+type SoundAssetGroup = "conveyor" | "grab" | "drop" | "fall" | "land";
+
+const audioPath = "/assets/audio/sfx";
+const soundAssets: Record<
+  SoundAssetGroup,
+  { prefix: string; variants: number; volume: number }
+> = {
+  conveyor: { prefix: "conveyor-creak-loop", variants: 3, volume: 0.22 },
+  grab: { prefix: "container-grab", variants: 4, volume: 0.5 },
+  drop: { prefix: "container-drop", variants: 4, volume: 0.38 },
+  fall: { prefix: "container-whoosh", variants: 4, volume: 0.34 },
+  land: { prefix: "container-land", variants: 5, volume: 0.58 },
+};
 
 export class SoundFx {
+  private scene: Phaser.Scene;
   private context?: AudioContext;
   private master?: GainNode;
-  private conveyorTimer?: number;
+  private conveyorSound?: Phaser.Sound.BaseSound;
   private conveyorEnabled = false;
   private isDestroyed = false;
   private lastDragSoundAt = 0;
+
+  static preload(scene: Phaser.Scene) {
+    for (const spec of Object.values(soundAssets)) {
+      for (let variant = 1; variant <= spec.variants; variant += 1) {
+        const variantId = variant.toString().padStart(2, "0");
+        const key = SoundFx.getAssetKey(spec.prefix, variant);
+        scene.load.audio(key, `${audioPath}/${spec.prefix}-${variantId}.mp3`);
+      }
+    }
+  }
+
+  constructor(scene: Phaser.Scene) {
+    this.scene = scene;
+  }
 
   async resume() {
     if (this.isDestroyed) {
@@ -20,28 +50,31 @@ export class SoundFx {
     }
 
     if (this.conveyorEnabled) {
-      this.startConveyorTimer();
+      this.startConveyorLoop();
     }
   }
 
   startConveyor() {
     this.conveyorEnabled = true;
-    this.startConveyorTimer();
+    this.startConveyorLoop();
   }
 
   stopConveyor() {
     this.conveyorEnabled = false;
 
-    if (this.conveyorTimer !== undefined) {
-      window.clearInterval(this.conveyorTimer);
-      this.conveyorTimer = undefined;
+    if (this.conveyorSound) {
+      this.conveyorSound.stop();
+      this.conveyorSound.destroy();
+      this.conveyorSound = undefined;
     }
   }
 
   grab() {
     this.resume();
-    this.playTone({ frequency: 170, duration: 0.08, gain: 0.18, type: "square" });
-    this.playNoise({ duration: 0.06, gain: 0.12, filterFrequency: 900 });
+    this.playVariant("grab", {
+      detune: this.randomDetune(70),
+      rate: this.randomRate(0.94, 1.08),
+    });
   }
 
   drag() {
@@ -56,62 +89,39 @@ export class SoundFx {
   }
 
   drop() {
-    this.playTone({
-      frequency: 110,
-      endFrequency: 70,
-      duration: 0.12,
-      gain: 0.14,
-      type: "sawtooth",
+    this.playVariant("drop", {
+      detune: this.randomDetune(60),
+      rate: this.randomRate(0.96, 1.08),
     });
   }
 
   fall(durationMs: number) {
-    this.ensureContext();
-
-    if (!this.context || !this.master) {
+    if (this.isDestroyed) {
       return () => undefined;
     }
 
-    const context = this.context;
-    const noise = context.createBufferSource();
-    const filter = context.createBiquadFilter();
-    const gain = context.createGain();
-    const now = context.currentTime;
-    const duration = Math.max(0.18, durationMs / 1000);
+    const desiredSeconds = Math.max(0.22, durationMs / 1000);
+    const key = this.getRandomAssetKey("fall");
+    const sound = this.scene.sound.add(key, {
+      volume: this.randomVolume(soundAssets.fall.volume, 0.08),
+      rate: Phaser.Math.Clamp(0.9 / desiredSeconds, 0.85, 2.2),
+      detune: this.randomDetune(45),
+    });
 
-    noise.buffer = this.createNoiseBuffer(duration);
-    filter.type = "bandpass";
-    filter.frequency.setValueAtTime(620, now);
-    filter.frequency.exponentialRampToValueAtTime(220, now + duration);
-    filter.Q.value = 0.8;
-    gain.gain.setValueAtTime(0.0001, now);
-    gain.gain.exponentialRampToValueAtTime(0.11, now + 0.04);
-    gain.gain.exponentialRampToValueAtTime(0.0001, now + duration);
-    noise.connect(filter);
-    filter.connect(gain);
-    gain.connect(this.master);
-    noise.start(now);
-    noise.stop(now + duration);
+    sound.play();
 
     return () => {
-      try {
-        gain.gain.cancelScheduledValues(context.currentTime);
-        gain.gain.setTargetAtTime(0.0001, context.currentTime, 0.02);
-        noise.stop(context.currentTime + 0.04);
-      } catch {
-        // The source may already be stopped by the scheduled duration.
+      if (!sound.pendingRemove) {
+        sound.stop();
+        sound.destroy();
       }
     };
   }
 
   land() {
-    this.playNoise({ duration: 0.18, gain: 0.28, filterFrequency: 180 });
-    this.playTone({
-      frequency: 72,
-      endFrequency: 48,
-      duration: 0.2,
-      gain: 0.22,
-      type: "triangle",
+    this.playVariant("land", {
+      detune: this.randomDetune(55),
+      rate: this.randomRate(0.94, 1.04),
     });
   }
 
@@ -188,26 +198,64 @@ export class SoundFx {
     this.master = undefined;
   }
 
-  private startConveyorTimer() {
-    if (!this.context || this.conveyorTimer !== undefined) {
+  private startConveyorLoop() {
+    if (this.conveyorSound?.isPlaying) {
       return;
     }
 
-    this.playConveyorCreak();
-    this.conveyorTimer = window.setInterval(() => {
-      this.playConveyorCreak();
-    }, 1450);
+    if (!this.conveyorSound) {
+      this.conveyorSound = this.scene.sound.add(this.getRandomAssetKey("conveyor"), {
+        loop: true,
+        volume: soundAssets.conveyor.volume,
+        rate: this.randomRate(0.96, 1.03),
+        detune: this.randomDetune(25),
+      });
+    }
+
+    this.conveyorSound.play();
   }
 
-  private playConveyorCreak() {
-    this.playNoise({ duration: 0.18, gain: 0.055, filterFrequency: 360 });
-    this.playTone({
-      frequency: 86,
-      endFrequency: 118,
-      duration: 0.22,
-      gain: 0.07,
-      type: "sawtooth",
+  private playVariant(
+    group: SoundAssetGroup,
+    config: Phaser.Types.Sound.SoundConfig = {},
+  ) {
+    if (this.isDestroyed) {
+      return;
+    }
+
+    const spec = soundAssets[group];
+
+    this.scene.sound.play(this.getRandomAssetKey(group), {
+      volume: this.randomVolume(spec.volume, 0.08),
+      ...config,
     });
+  }
+
+  private getRandomAssetKey(group: SoundAssetGroup) {
+    const spec = soundAssets[group];
+    const variant = Phaser.Math.Between(1, spec.variants);
+
+    return SoundFx.getAssetKey(spec.prefix, variant);
+  }
+
+  private static getAssetKey(prefix: string, variant: number) {
+    return `sfx:${prefix}-${variant.toString().padStart(2, "0")}`;
+  }
+
+  private randomVolume(baseVolume: number, spread: number) {
+    return Phaser.Math.Clamp(
+      baseVolume + Phaser.Math.FloatBetween(-spread, spread),
+      0,
+      1,
+    );
+  }
+
+  private randomRate(minimum: number, maximum: number) {
+    return Phaser.Math.FloatBetween(minimum, maximum);
+  }
+
+  private randomDetune(spread: number) {
+    return Phaser.Math.Between(-spread, spread);
   }
 
   private playTone({

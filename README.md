@@ -40,6 +40,24 @@ Build for production:
 npm run build
 ```
 
+Generate static sound effect files with ElevenLabs:
+
+```sh
+ELEVENLABS_API_KEY=<your_api_key_here> npm run assets:audio
+```
+
+The script also reads `ELEVENLABS_API_KEY` from `.env`, which is ignored by git.
+Get an API key from the ElevenLabs developer dashboard:
+https://elevenlabs.io/app/developers/api-keys
+
+Useful options:
+
+```sh
+npm run assets:audio -- --dry-run
+npm run assets:audio -- --only conveyor-creak-loop,container-land
+npm run assets:audio -- --force
+```
+
 Deploy to Cloudflare Workers:
 
 ```sh

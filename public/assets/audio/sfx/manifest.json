@@ -1,0 +1,229 @@
+{
+  "generatedAt": "2026-04-15T14:55:36.620Z",
+  "endpoint": "https://api.elevenlabs.io/v1/sound-generation",
+  "outputDir": "public/assets/audio/sfx",
+  "modelId": null,
+  "outputFormat": "mp3_44100_128",
+  "files": [
+    {
+      "file": "public/assets/audio/sfx/conveyor-creak-loop-01.mp3",
+      "id": "conveyor-creak-loop",
+      "variant": 1,
+      "durationSeconds": 6,
+      "loop": true,
+      "promptInfluence": 0.45,
+      "prompt": "Loopable old industrial conveyor belt running in a cargo dock. Low electric motor hum, metal rollers clicking rhythmically, intermittent rusty creaks, subtle chain movement. Clean close game sound effect, seamless loop, no music, no voices. Variation 1: make this version distinct from the others, but keep the same timing, scale, and dry game-ready style.",
+      "status": "generated",
+      "characterCost": "120"
+    },
+    {
+      "file": "public/assets/audio/sfx/conveyor-creak-loop-02.mp3",
+      "id": "conveyor-creak-loop",
+      "variant": 2,
+      "durationSeconds": 6,
+      "loop": true,
+      "promptInfluence": 0.45,
+      "prompt": "Loopable old industrial conveyor belt running in a cargo dock. Low electric motor hum, metal rollers clicking rhythmically, intermittent rusty creaks, subtle chain movement. Clean close game sound effect, seamless loop, no music, no voices. Variation 2: make this version distinct from the others, but keep the same timing, scale, and dry game-ready style.",
+      "status": "generated",
+      "characterCost": "120"
+    },
+    {
+      "file": "public/assets/audio/sfx/conveyor-creak-loop-03.mp3",
+      "id": "conveyor-creak-loop",
+      "variant": 3,
+      "durationSeconds": 6,
+      "loop": true,
+      "promptInfluence": 0.45,
+      "prompt": "Loopable old industrial conveyor belt running in a cargo dock. Low electric motor hum, metal rollers clicking rhythmically, intermittent rusty creaks, subtle chain movement. Clean close game sound effect, seamless loop, no music, no voices. Variation 3: make this version distinct from the others, but keep the same timing, scale, and dry game-ready style.",
+      "status": "generated",
+      "characterCost": "120"
+    },
+    {
+      "file": "public/assets/audio/sfx/container-grab-01.mp3",
+      "id": "container-grab",
+      "variant": 1,
+      "durationSeconds": 0.7,
+      "loop": false,
+      "promptInfluence": 0.55,
+      "prompt": "Short heavy metal cargo container being grabbed by a crane latch. Sharp steel clank, small scrape, hollow container resonance, tight dry foley for a game pickup sound. No music, no voices. Variation 1: make this version distinct from the others, but keep the same timing, scale, and dry game-ready style.",
+      "status": "generated",
+      "characterCost": "14"
+    },
+    {
+      "file": "public/assets/audio/sfx/container-grab-02.mp3",
+      "id": "container-grab",
+      "variant": 2,
+      "durationSeconds": 0.7,
+      "loop": false,
+      "promptInfluence": 0.55,
+      "prompt": "Short heavy metal cargo container being grabbed by a crane latch. Sharp steel clank, small scrape, hollow container resonance, tight dry foley for a game pickup sound. No music, no voices. Variation 2: make this version distinct from the others, but keep the same timing, scale, and dry game-ready style.",
+      "status": "generated",
+      "characterCost": "14"
+    },
+    {
+      "file": "public/assets/audio/sfx/container-grab-03.mp3",
+      "id": "container-grab",
+      "variant": 3,
+      "durationSeconds": 0.7,
+      "loop": false,
+      "promptInfluence": 0.55,
+      "prompt": "Short heavy metal cargo container being grabbed by a crane latch. Sharp steel clank, small scrape, hollow container resonance, tight dry foley for a game pickup sound. No music, no voices. Variation 3: make this version distinct from the others, but keep the same timing, scale, and dry game-ready style.",
+      "status": "generated",
+      "characterCost": "14"
+    },
+    {
+      "file": "public/assets/audio/sfx/container-grab-04.mp3",
+      "id": "container-grab",
+      "variant": 4,
+      "durationSeconds": 0.7,
+      "loop": false,
+      "promptInfluence": 0.55,
+      "prompt": "Short heavy metal cargo container being grabbed by a crane latch. Sharp steel clank, small scrape, hollow container resonance, tight dry foley for a game pickup sound. No music, no voices. Variation 4: make this version distinct from the others, but keep the same timing, scale, and dry game-ready style.",
+      "status": "generated",
+      "characterCost": "14"
+    },
+    {
+      "file": "public/assets/audio/sfx/container-drop-01.mp3",
+      "id": "container-drop",
+      "variant": 1,
+      "durationSeconds": 0.7,
+      "loop": false,
+      "promptInfluence": 0.55,
+      "prompt": "Short heavy cargo container released from a grabber. Dull metal thunk, brief scraping slide, small rattling chain tail, compact game sound effect. No music, no voices. Variation 1: make this version distinct from the others, but keep the same timing, scale, and dry game-ready style.",
+      "status": "generated",
+      "characterCost": "14"
+    },
+    {
+      "file": "public/assets/audio/sfx/container-drop-02.mp3",
+      "id": "container-drop",
+      "variant": 2,
+      "durationSeconds": 0.7,
+      "loop": false,
+      "promptInfluence": 0.55,
+      "prompt": "Short heavy cargo container released from a grabber. Dull metal thunk, brief scraping slide, small rattling chain tail, compact game sound effect. No music, no voices. Variation 2: make this version distinct from the others, but keep the same timing, scale, and dry game-ready style.",
+      "status": "generated",
+      "characterCost": "14"
+    },
+    {
+      "file": "public/assets/audio/sfx/container-drop-03.mp3",
+      "id": "container-drop",
+      "variant": 3,
+      "durationSeconds": 0.7,
+      "loop": false,
+      "promptInfluence": 0.55,
+      "prompt": "Short heavy cargo container released from a grabber. Dull metal thunk, brief scraping slide, small rattling chain tail, compact game sound effect. No music, no voices. Variation 3: make this version distinct from the others, but keep the same timing, scale, and dry game-ready style.",
+      "status": "generated",
+      "characterCost": "14"
+    },
+    {
+      "file": "public/assets/audio/sfx/container-drop-04.mp3",
+      "id": "container-drop",
+      "variant": 4,
+      "durationSeconds": 0.7,
+      "loop": false,
+      "promptInfluence": 0.55,
+      "prompt": "Short heavy cargo container released from a grabber. Dull metal thunk, brief scraping slide, small rattling chain tail, compact game sound effect. No music, no voices. Variation 4: make this version distinct from the others, but keep the same timing, scale, and dry game-ready style.",
+      "status": "generated",
+      "characterCost": "14"
+    },
+    {
+      "file": "public/assets/audio/sfx/container-whoosh-01.mp3",
+      "id": "container-whoosh",
+      "variant": 1,
+      "durationSeconds": 0.9,
+      "loop": false,
+      "promptInfluence": 0.5,
+      "prompt": "Large hollow steel cargo container falling quickly through open air in a warehouse cargo bay. Deep airy whoosh with slight metal vibration, no impact at the end, clean game sound effect. No music, no voices. Variation 1: make this version distinct from the others, but keep the same timing, scale, and dry game-ready style.",
+      "status": "generated",
+      "characterCost": "18"
+    },
+    {
+      "file": "public/assets/audio/sfx/container-whoosh-02.mp3",
+      "id": "container-whoosh",
+      "variant": 2,
+      "durationSeconds": 0.9,
+      "loop": false,
+      "promptInfluence": 0.5,
+      "prompt": "Large hollow steel cargo container falling quickly through open air in a warehouse cargo bay. Deep airy whoosh with slight metal vibration, no impact at the end, clean game sound effect. No music, no voices. Variation 2: make this version distinct from the others, but keep the same timing, scale, and dry game-ready style.",
+      "status": "generated",
+      "characterCost": "18"
+    },
+    {
+      "file": "public/assets/audio/sfx/container-whoosh-03.mp3",
+      "id": "container-whoosh",
+      "variant": 3,
+      "durationSeconds": 0.9,
+      "loop": false,
+      "promptInfluence": 0.5,
+      "prompt": "Large hollow steel cargo container falling quickly through open air in a warehouse cargo bay. Deep airy whoosh with slight metal vibration, no impact at the end, clean game sound effect. No music, no voices. Variation 3: make this version distinct from the others, but keep the same timing, scale, and dry game-ready style.",
+      "status": "generated",
+      "characterCost": "18"
+    },
+    {
+      "file": "public/assets/audio/sfx/container-whoosh-04.mp3",
+      "id": "container-whoosh",
+      "variant": 4,
+      "durationSeconds": 0.9,
+      "loop": false,
+      "promptInfluence": 0.5,
+      "prompt": "Large hollow steel cargo container falling quickly through open air in a warehouse cargo bay. Deep airy whoosh with slight metal vibration, no impact at the end, clean game sound effect. No music, no voices. Variation 4: make this version distinct from the others, but keep the same timing, scale, and dry game-ready style.",
+      "status": "generated",
+      "characterCost": "18"
+    },
+    {
+      "file": "public/assets/audio/sfx/container-land-01.mp3",
+      "id": "container-land",
+      "variant": 1,
+      "durationSeconds": 1.2,
+      "loop": false,
+      "promptInfluence": 0.55,
+      "prompt": "Heavy steel cargo container crashing onto other metal containers in a cargo bay. Powerful low thud, hard steel clang, hollow resonance, rattling metal tail, short warehouse reverb, satisfying game impact. No explosion, no music, no voices. Variation 1: make this version distinct from the others, but keep the same timing, scale, and dry game-ready style.",
+      "status": "generated",
+      "characterCost": "24"
+    },
+    {
+      "file": "public/assets/audio/sfx/container-land-02.mp3",
+      "id": "container-land",
+      "variant": 2,
+      "durationSeconds": 1.2,
+      "loop": false,
+      "promptInfluence": 0.55,
+      "prompt": "Heavy steel cargo container crashing onto other metal containers in a cargo bay. Powerful low thud, hard steel clang, hollow resonance, rattling metal tail, short warehouse reverb, satisfying game impact. No explosion, no music, no voices. Variation 2: make this version distinct from the others, but keep the same timing, scale, and dry game-ready style.",
+      "status": "generated",
+      "characterCost": "24"
+    },
+    {
+      "file": "public/assets/audio/sfx/container-land-03.mp3",
+      "id": "container-land",
+      "variant": 3,
+      "durationSeconds": 1.2,
+      "loop": false,
+      "promptInfluence": 0.55,
+      "prompt": "Heavy steel cargo container crashing onto other metal containers in a cargo bay. Powerful low thud, hard steel clang, hollow resonance, rattling metal tail, short warehouse reverb, satisfying game impact. No explosion, no music, no voices. Variation 3: make this version distinct from the others, but keep the same timing, scale, and dry game-ready style.",
+      "status": "generated",
+      "characterCost": "24"
+    },
+    {
+      "file": "public/assets/audio/sfx/container-land-04.mp3",
+      "id": "container-land",
+      "variant": 4,
+      "durationSeconds": 1.2,
+      "loop": false,
+      "promptInfluence": 0.55,
+      "prompt": "Heavy steel cargo container crashing onto other metal containers in a cargo bay. Powerful low thud, hard steel clang, hollow resonance, rattling metal tail, short warehouse reverb, satisfying game impact. No explosion, no music, no voices. Variation 4: make this version distinct from the others, but keep the same timing, scale, and dry game-ready style.",
+      "status": "generated",
+      "characterCost": "24"
+    },
+    {
+      "file": "public/assets/audio/sfx/container-land-05.mp3",
+      "id": "container-land",
+      "variant": 5,
+      "durationSeconds": 1.2,
+      "loop": false,
+      "promptInfluence": 0.55,
+      "prompt": "Heavy steel cargo container crashing onto other metal containers in a cargo bay. Powerful low thud, hard steel clang, hollow resonance, rattling metal tail, short warehouse reverb, satisfying game impact. No explosion, no music, no voices. Variation 5: make this version distinct from the others, but keep the same timing, scale, and dry game-ready style.",
+      "status": "generated",
+      "characterCost": "24"
+    }
+  ]
+}

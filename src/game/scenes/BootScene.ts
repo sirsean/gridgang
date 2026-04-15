@@ -239,7 +239,7 @@ export class BootScene extends Phaser.Scene {
   private spawnElapsed = 0;
   private score = 0;
   private timeRemainingMs = 90_000;
-  private soundFx = new SoundFx();
+  private soundFx!: SoundFx;
   private isGameOver = false;
   private scoredTileKeys = new Set<string>();
   private scoredRows = new Set<number>();
@@ -253,6 +253,8 @@ export class BootScene extends Phaser.Scene {
   }
 
   preload() {
+    SoundFx.preload(this);
+
     for (const usage of cellTextureUsages) {
       for (const group of cellAssetGroups) {
         for (let variant = 1; variant <= cellAssetVariants; variant += 1) {
@@ -267,6 +269,7 @@ export class BootScene extends Phaser.Scene {
   }
 
   create() {
+    this.soundFx = new SoundFx(this);
     this.cameras.main.setBackgroundColor(palette.background);
     this.cargoGrid = Array.from({ length: bay.rows }, () =>
       Array<number | null>(bay.columns).fill(null),
