@@ -1,0 +1,14 @@
+{
+  "generatedAt": "2026-04-17T20:23:50.172Z",
+  "model": "gpt-image-1.5",
+  "quality": "low",
+  "source": "OpenAI images API",
+  "files": [
+    {
+      "file": "public/assets/share/og-hero.png",
+      "id": "og-share-hero",
+      "prompt": "Use case: Open Graph and Discord link preview hero image for a browser game\nCreative brief: inspired by dock crews who move colossal shipping containers through leviathan-scale docking lattices in deep space—dangerously tight mechanical corridors, high-stakes precision, industrial decay, whispers of contraband moving through port\nPrimary request: wide cinematic illustration of a grimy retro-futurist cargo lattice, massive container blocks threading through narrow gantries and guide rails, sense of claustrophobic industrial scale, no characters in focus\nStyle/medium: gritty painted game key art, cassette retro-futurism, industrial sci-fi, not photoreal, not a clean UI mockup\nComposition/framing: strong horizontal read for a 1200x630 crop, dramatic depth, leading lines through the lattice, hero weight slightly off-center\nLighting/mood: dim work lights, hazard amber and dull red indicators, soot haze, tension and fatigue, dangerous workplace atmosphere\nColor palette: black oil, oxidized steel, hazard red, aged amber, pale teal status glints, rust and soot\nMaterials/textures: riveted gantries, scratched container hulls with no markings, grease, dust, worn rubber bumpers, chain and cable silhouettes\nConstraints: no readable text, no letters, no numbers, no logos, no watermark, no modern app UI, no glossy Apple-like surfaces\nAvoid: sleek spaceship bridge, purple neon gradients, pristine corridors, stock photo humans, close-up faces, cartoon simplicity",
+      "status": "generated"
+    }
+  ]
+}
