@@ -3,6 +3,13 @@
   "name": "gridgang",
   "main": "./src/worker/index.ts",
   "compatibility_date": "2026-04-12",
+  "workers_dev": false,
+  "routes": [
+    {
+      "pattern": "gridgang.sirsean.me",
+      "custom_domain": true,
+    },
+  ],
   "assets": {
     "binding": "ASSETS",
     "not_found_handling": "single-page-application"

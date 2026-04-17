@@ -63,6 +63,8 @@ Do not let visual effects interfere with shape readability or collision clarity.
 
 The target is Cloudflare Workers, not a traditional server. Keep the MVP fully static from the client perspective. Add Worker routes only when needed for leaderboards or other server-backed features.
 
+Production deploys are automatic: pushing to `main` triggers CI to build and deploy the Worker. You do not need to run `npx wrangler deploy` (or `npm run deploy`) manually for routine changes unless you are deliberately doing a one-off manual release or debugging deploy tooling.
+
 Cloudflare config is currently:
 
 - `vite.config.ts` uses `cloudflare()`.
