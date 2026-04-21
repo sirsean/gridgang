@@ -7,11 +7,18 @@ type CargoCell = [number, number];
 type CellAssetGroup = "hazard" | "cargo-a" | "cargo-b" | "cargo-c" | "cargo-d";
 type CellTextureUsage = "conveyor" | "bay";
 
+type BayCell = {
+  color: number;
+  isHot: boolean;
+} | null;
+
 type ShapeDefinition = {
   key: string;
   color: number;
   assetGroup: CellAssetGroup;
   cells: CargoCell[];
+  /** Same length as `cells`; true = smuggler cell (glow, 5× share of piece score, inspector risk). */
+  hotCellMask?: boolean[];
 };
 
 type ConveyorCargo = {
@@ -59,14 +66,14 @@ const cargoStyles: Array<{ color: number; assetGroup: CellAssetGroup }> = [
 ];
 
 const conveyor = {
-  x: 80,
   y: 32,
-  width: 560,
   height: 264,
   rows: [60, 180],
   speed: 42,
-  spawnX: 44,
-  despawnX: 740,
+  /** Cargo spawns this far left of x = 0 (off the left edge). */
+  spawnPastLeft: 56,
+  /** Cargo is removed after moving this far past the right edge of the screen. */
+  despawnPastRight: 120,
   spawnDelay: 1500,
   maxCargo: 12,
 };
@@ -77,6 +84,23 @@ const bay = {
   cell: 40,
   columns: 12,
   rows: 15,
+};
+
+const inspector = {
+  trackY: 300,
+  offScreenMargin: 96,
+  passDurationMs: 9300,
+  idleWaitMinMs: 5000,
+  idleWaitMaxMs: 13_000,
+  firstIdleMinMs: 2500,
+  firstIdleMaxMs: 6000,
+  beamFill: 0xff9a12,
+  beamStroke: 0xffe08a,
+  railColor: 0xd4a024,
+  droneBodyStroke: 0xb8893a,
+  pulsePeriodMs: 680,
+  hotCellChance: 0.077,
+  hotScoreMultiplier: 5,
 };
 
 const conveyorBlock = {
@@ -230,7 +254,8 @@ const shapeDefinitions: ShapeDefinition[] = [
 ];
 
 export class BootScene extends Phaser.Scene {
-  private cargoGrid: Array<Array<number | null>> = [];
+  private cargoGrid: Array<Array<BayCell>> = [];
+  private pendingGridCells = new Set<string>();
   private conveyorCargo: ConveyorCargo[] = [];
   private cargoByHitbox = new Map<Phaser.GameObjects.Rectangle, ConveyorCargo>();
   private activeDrag?: ConveyorCargo;
@@ -249,6 +274,20 @@ export class BootScene extends Phaser.Scene {
   private scoreText?: Phaser.GameObjects.Text;
   private topScoreText?: Phaser.GameObjects.Text;
   private timerText?: Phaser.GameObjects.Text;
+  private inspectorProbeX = 0;
+  private inspectorRail?: Phaser.GameObjects.Line;
+  private inspectorBeam?: Phaser.GameObjects.Rectangle;
+  private inspectorDrone?: Phaser.GameObjects.Container;
+  private inspectorDroneBody?: Phaser.GameObjects.Rectangle;
+  private inspectorDroneLens?: Phaser.GameObjects.Rectangle;
+  private inspectorPulsePhase = 0;
+  private inspectorMode: "idle" | "passing" = "idle";
+  private inspectorIdleMs = 0;
+  private inspectorPassElapsed = 0;
+  private inspectorPassStartX = 0;
+  private inspectorPassEndX = 0;
+  /** True if the last pass finished by leaving past the right edge. */
+  private inspectorLastExitRight: boolean | null = null;
 
   constructor(private readonly mission: DockMission = defaultMission) {
     super("boot");
@@ -274,12 +313,13 @@ export class BootScene extends Phaser.Scene {
     this.soundFx = new SoundFx(this);
     this.cameras.main.setBackgroundColor(palette.background);
     this.cargoGrid = Array.from({ length: bay.rows }, () =>
-      Array<number | null>(bay.columns).fill(null),
+      Array.from({ length: bay.columns }, (): BayCell => null),
     );
 
     this.drawDockPanel();
     this.drawConveyor();
     this.drawCargoBay();
+    this.drawInspectorRig();
     this.seedConveyor();
     this.drawHud();
 
@@ -306,9 +346,11 @@ export class BootScene extends Phaser.Scene {
     this.updateClockTick(previousTimeRemainingMs, this.timeRemainingMs);
 
     if (this.timeRemainingMs <= 0) {
-      this.endGame();
+      this.endGame("complete");
       return;
     }
+
+    this.updateInspector(delta);
 
     const movement = (delta / 1000) * conveyor.speed;
 
@@ -324,7 +366,7 @@ export class BootScene extends Phaser.Scene {
     this.spawnElapsed += delta;
     if (this.spawnElapsed >= conveyor.spawnDelay) {
       this.spawnElapsed = 0;
-      this.spawnConveyorCargo(conveyor.spawnX, this.nextRowIndex);
+      this.spawnConveyorCargo(-conveyor.spawnPastLeft, this.nextRowIndex);
       this.nextRowIndex = (this.nextRowIndex + 1) % conveyor.rows.length;
     }
   }
@@ -342,28 +384,33 @@ export class BootScene extends Phaser.Scene {
   }
 
   private drawConveyor() {
+    const width = this.scale.width;
+
     this.add
-      .rectangle(
-        conveyor.x,
-        conveyor.y,
-        conveyor.width,
-        conveyor.height,
-        palette.panel,
-      )
+      .rectangle(0, conveyor.y, width, conveyor.height, palette.panel)
       .setOrigin(0)
       .setStrokeStyle(3, palette.panelLine, 0.8);
 
     this.add
-      .text(98, 10, "INBOUND CONVEYOR", {
+      .text(20, 10, "INBOUND CONVEYOR", {
         fontFamily: "monospace",
         fontSize: "18px",
         color: "#c4a15a",
       })
       .setResolution(2);
 
-    for (const y of [108, 216]) {
-      for (let x = 104; x < 620; x += 48) {
-        this.add.rectangle(x, y, 30, 10, palette.panelLine, 0.48);
+    const dashY = [108, 216] as const;
+    const dashW = 30;
+    const dashH = 10;
+    const dashGap = 18;
+    const pitch = dashW + dashGap;
+    const startLeft = -dashGap;
+
+    for (const y of dashY) {
+      for (let left = startLeft; left < width + dashW; left += pitch) {
+        this.add
+          .rectangle(left + dashW / 2, y, dashW, dashH, palette.panelLine, 0.48)
+          .setOrigin(0.5, 0.5);
       }
     }
   }
@@ -404,16 +451,170 @@ export class BootScene extends Phaser.Scene {
       .setResolution(2);
   }
 
+  private drawInspectorRig() {
+    const railLeft = 0;
+    const railRight = this.scale.width;
+
+    this.inspectorRail = this.add
+      .line(0, 0, railLeft, inspector.trackY, railRight, inspector.trackY, inspector.railColor, 1)
+      .setOrigin(0)
+      .setLineWidth(4)
+      .setDepth(13);
+
+    const beamHeight = bay.y + bay.rows * bay.cell - inspector.trackY + 6;
+    this.inspectorBeam = this.add
+      .rectangle(
+        this.scale.width / 2,
+        inspector.trackY,
+        bay.cell - 6,
+        beamHeight,
+        inspector.beamFill,
+        0.14,
+      )
+      .setOrigin(0.5, 0)
+      .setStrokeStyle(2, inspector.beamStroke, 0.42)
+      .setDepth(12);
+
+    this.inspectorDroneBody = this.add
+      .rectangle(0, 0, 34, 16, 0x2a2418, 0.96)
+      .setStrokeStyle(2, inspector.droneBodyStroke, 0.55);
+    this.inspectorDroneLens = this.add
+      .rectangle(0, 10, 14, 8, 0x1f170c, 0.94)
+      .setStrokeStyle(2, inspector.beamStroke, 0.72);
+    this.inspectorDrone = this.add.container(this.scale.width / 2, inspector.trackY, [
+      this.inspectorDroneBody,
+      this.inspectorDroneLens,
+    ]);
+    this.inspectorDrone.setDepth(15);
+
+    this.inspectorMode = "idle";
+    this.inspectorIdleMs = Phaser.Math.Between(
+      inspector.firstIdleMinMs,
+      inspector.firstIdleMaxMs,
+    );
+    this.inspectorRail.setVisible(false);
+    this.inspectorBeam.setVisible(false);
+    this.inspectorDrone.setVisible(false);
+  }
+
+  private beginInspectorPass() {
+    const width = this.scale.width;
+    const margin = inspector.offScreenMargin;
+    let entryFromLeft: boolean;
+
+    if (this.inspectorLastExitRight === null) {
+      entryFromLeft = Math.random() < 0.5;
+    } else {
+      const naturalNextFromLeft = !this.inspectorLastExitRight;
+      entryFromLeft = Math.random() < 0.62 ? naturalNextFromLeft : !naturalNextFromLeft;
+    }
+
+    this.inspectorPassStartX = entryFromLeft ? -margin : width + margin;
+    this.inspectorPassEndX = entryFromLeft ? width + margin : -margin;
+    this.inspectorPassElapsed = 0;
+    this.inspectorPulsePhase = 0;
+    this.inspectorMode = "passing";
+    this.inspectorProbeX = this.inspectorPassStartX;
+
+    this.inspectorRail?.setVisible(true);
+    this.inspectorBeam?.setVisible(true);
+    this.inspectorDrone?.setVisible(true);
+    this.inspectorBeam?.setX(this.inspectorProbeX);
+    this.inspectorDrone?.setPosition(this.inspectorProbeX, inspector.trackY);
+  }
+
+  private endInspectorPass() {
+    this.inspectorLastExitRight = this.inspectorPassEndX > this.inspectorPassStartX;
+    this.inspectorMode = "idle";
+    this.inspectorIdleMs = Phaser.Math.Between(inspector.idleWaitMinMs, inspector.idleWaitMaxMs);
+    this.inspectorRail?.setVisible(false);
+    this.inspectorBeam?.setVisible(false);
+    this.inspectorDrone?.setVisible(false);
+  }
+
+  private updateInspector(delta: number) {
+    if (!this.inspectorRail || !this.inspectorBeam || !this.inspectorDrone) {
+      return;
+    }
+
+    if (this.inspectorMode === "idle") {
+      this.inspectorIdleMs -= delta;
+      if (this.inspectorIdleMs <= 0) {
+        this.beginInspectorPass();
+      }
+      return;
+    }
+
+    this.inspectorPassElapsed += delta;
+    const t = Phaser.Math.Clamp(
+      this.inspectorPassElapsed / inspector.passDurationMs,
+      0,
+      1,
+    );
+    this.inspectorProbeX = Phaser.Math.Linear(this.inspectorPassStartX, this.inspectorPassEndX, t);
+
+    this.inspectorBeam.setX(this.inspectorProbeX);
+    this.inspectorDrone.setPosition(this.inspectorProbeX, inspector.trackY);
+
+    this.inspectorPulsePhase += (delta / inspector.pulsePeriodMs) * (Math.PI * 2);
+    const pulse = 0.5 + 0.5 * Math.sin(this.inspectorPulsePhase);
+    const beamFillA = Phaser.Math.Linear(0.06, 0.22, pulse);
+    const beamStrokeA = Phaser.Math.Linear(0.28, 0.78, pulse);
+    this.inspectorBeam.setFillStyle(inspector.beamFill, beamFillA);
+    this.inspectorBeam.setStrokeStyle(2, inspector.beamStroke, beamStrokeA);
+    this.inspectorRail.setAlpha(Phaser.Math.Linear(0.5, 1, pulse));
+    this.inspectorDroneBody?.setStrokeStyle(2, inspector.droneBodyStroke, Phaser.Math.Linear(0.38, 0.82, pulse));
+    this.inspectorDroneLens?.setStrokeStyle(2, inspector.beamStroke, Phaser.Math.Linear(0.5, 0.98, pulse));
+
+    const bayWidth = bay.columns * bay.cell;
+    const bayRight = bay.x + bayWidth;
+
+    if (this.inspectorProbeX >= bay.x && this.inspectorProbeX < bayRight) {
+      const column = Phaser.Math.Clamp(
+        Math.floor((this.inspectorProbeX - bay.x) / bay.cell),
+        0,
+        bay.columns - 1,
+      );
+
+      if (this.isExposedHotInColumn(column)) {
+        this.endGame("caught");
+      }
+    }
+
+    if (t >= 1) {
+      this.endInspectorPass();
+    }
+  }
+
+  private isExposedHotInColumn(column: number) {
+    for (let row = 0; row < bay.rows; row += 1) {
+      const cell = this.cargoGrid[row][column];
+      if (cell !== null) {
+        return cell.isHot;
+      }
+    }
+
+    return false;
+  }
+
+  private gridCellPendingKey(gridX: number, gridY: number) {
+    return `${gridX},${gridY}`;
+  }
+
   private seedConveyor() {
+    const width = this.scale.width;
+    const pad = 72;
+    const spread = (width - pad * 2) / 3;
+    const xs = [pad, pad + spread, pad + spread * 2, pad + spread * 3] as const;
     const initialCargo = [
-      [108, 0],
-      [242, 0],
-      [376, 0],
-      [510, 0],
-      [108, 1],
-      [242, 1],
-      [376, 1],
-      [510, 1],
+      [xs[0], 0],
+      [xs[1], 0],
+      [xs[2], 0],
+      [xs[3], 0],
+      [xs[0], 1],
+      [xs[1], 1],
+      [xs[2], 1],
+      [xs[3], 1],
     ] satisfies Array<[number, number]>;
 
     for (const [x, row] of initialCargo) {
@@ -469,11 +670,15 @@ export class BootScene extends Phaser.Scene {
 
   private createSpawnDefinition(baseDefinition: ShapeDefinition) {
     const style = Phaser.Utils.Array.GetRandom(cargoStyles);
+    const hotCellMask = baseDefinition.cells.map(
+      () => Phaser.Math.FloatBetween(0, 1) < inspector.hotCellChance,
+    );
 
     return {
       ...baseDefinition,
       color: style.color,
       assetGroup: style.assetGroup,
+      hotCellMask,
     };
   }
 
@@ -488,6 +693,28 @@ export class BootScene extends Phaser.Scene {
   ) {
     const bounds = this.getShapePixelBounds(definition, blockSize, blockStep);
     const container = this.add.container(x, y);
+    const hotRims: Phaser.GameObjects.Rectangle[] = [];
+
+    for (const [index, [cellX, cellY]] of definition.cells.entries()) {
+      if (definition.hotCellMask?.[index] !== true) {
+        continue;
+      }
+
+      const rim = this.add
+        .rectangle(
+          cellX * blockStep + blockSize / 2,
+          cellY * blockStep + blockSize / 2,
+          blockSize + 10,
+          blockSize + 10,
+          0xff4d0a,
+          0.12,
+        )
+        .setStrokeStyle(3, 0xff9a45, 0.92);
+
+      rim.setBlendMode(Phaser.BlendModes.ADD);
+      container.add(rim);
+      hotRims.push(rim);
+    }
 
     for (const [index, [cellX, cellY]] of definition.cells.entries()) {
       const textureKey = this.getCellTextureKey(
@@ -505,6 +732,17 @@ export class BootScene extends Phaser.Scene {
     }
 
     container.setSize(bounds.width, bounds.height);
+
+    if (hotRims.length > 0) {
+      this.tweens.add({
+        targets: hotRims,
+        alpha: 0.35,
+        duration: 450,
+        yoyo: true,
+        repeat: -1,
+        ease: "Sine.InOut",
+      });
+    }
 
     return container;
   }
@@ -562,7 +800,10 @@ export class BootScene extends Phaser.Scene {
 
   private despawnConveyorCargo() {
     this.conveyorCargo = this.conveyorCargo.filter((cargo) => {
-      if (cargo.isDragging || cargo.container.x < conveyor.despawnX) {
+      if (
+        cargo.isDragging ||
+        cargo.container.x < this.scale.width + conveyor.despawnPastRight
+      ) {
         return true;
       }
 
@@ -778,6 +1019,7 @@ export class BootScene extends Phaser.Scene {
         gridX >= bay.columns ||
         gridY < 0 ||
         gridY >= bay.rows ||
+        this.pendingGridCells.has(this.gridCellPendingKey(gridX, gridY)) ||
         this.cargoGrid[gridY][gridX] !== null
       ) {
         return false;
@@ -794,9 +1036,13 @@ export class BootScene extends Phaser.Scene {
     landingRow: number,
     pointerY: number,
   ) {
-    this.reserveGridCells(definition, column, landingRow);
+    for (const [cellX, cellY] of definition.cells) {
+      this.pendingGridCells.add(
+        this.gridCellPendingKey(column + cellX, landingRow + cellY),
+      );
+    }
+
     const scoreValue = this.getScoreValue(definition);
-    const scoreBonuses = this.collectScoreBonuses(definition, column, landingRow);
 
     const releaseRow = Math.floor((pointerY - bay.y) / bay.cell);
     const startRow = Phaser.Math.Clamp(releaseRow, 0, landingRow);
@@ -823,6 +1069,13 @@ export class BootScene extends Phaser.Scene {
         stopFallSound();
         this.soundFx.land();
         container.setDepth(4);
+        for (const [cellX, cellY] of definition.cells) {
+          this.pendingGridCells.delete(
+            this.gridCellPendingKey(column + cellX, landingRow + cellY),
+          );
+        }
+        this.reserveGridCells(definition, column, landingRow);
+        const scoreBonuses = this.collectScoreBonuses(definition, column, landingRow);
         this.awardScore(
           scoreValue,
           definition,
@@ -839,8 +1092,11 @@ export class BootScene extends Phaser.Scene {
     column: number,
     row: number,
   ) {
-    for (const [cellX, cellY] of definition.cells) {
-      this.cargoGrid[row + cellY][column + cellX] = definition.color;
+    for (const [index, [cellX, cellY]] of definition.cells.entries()) {
+      this.cargoGrid[row + cellY][column + cellX] = {
+        color: definition.color,
+        isHot: definition.hotCellMask?.[index] === true,
+      };
     }
   }
 
@@ -869,7 +1125,7 @@ export class BootScene extends Phaser.Scene {
     }
 
     if (this.hasTopRowCargo()) {
-      this.endGame();
+      this.endGame("overflow");
     }
   }
 
@@ -1010,18 +1266,18 @@ export class BootScene extends Phaser.Scene {
       return null;
     }
 
-    const tileColor = this.cargoGrid[tileRow][tileColumn];
+    const anchorCell = this.cargoGrid[tileRow][tileColumn];
 
-    if (tileColor === null) {
+    if (anchorCell === null) {
       return null;
     }
 
+    const tileColor = anchorCell.color;
+
     for (let rowOffset = 0; rowOffset < tileSize; rowOffset += 1) {
       for (let columnOffset = 0; columnOffset < tileSize; columnOffset += 1) {
-        if (
-          this.cargoGrid[tileRow + rowOffset][tileColumn + columnOffset] !==
-          tileColor
-        ) {
+        const cell = this.cargoGrid[tileRow + rowOffset][tileColumn + columnOffset];
+        if (cell === null || cell.color !== tileColor) {
           return null;
         }
       }
@@ -1075,39 +1331,66 @@ export class BootScene extends Phaser.Scene {
     const isSmall = definition.cells.length <= 4;
     const isLarge = definition.cells.length >= 5;
 
+    let value: number;
+
     switch (this.mission.scoringRule) {
       case "red-only":
-        return isRed ? baseScore : 0;
+        value = isRed ? baseScore : 0;
+        break;
       case "yellow-penalty":
-        return isYellow ? -baseScore : baseScore;
+        value = isYellow ? -baseScore : baseScore;
+        break;
       case "yellow-only":
-        return isYellow ? baseScore : 0;
+        value = isYellow ? baseScore : 0;
+        break;
       case "teal-only":
-        return isTeal ? baseScore : 0;
+        value = isTeal ? baseScore : 0;
+        break;
       case "grey-only":
-        return isGrey ? baseScore : 0;
+        value = isGrey ? baseScore : 0;
+        break;
       case "red-penalty":
-        return isRed ? -baseScore : baseScore;
+        value = isRed ? -baseScore : baseScore;
+        break;
       case "non-red-only":
-        return isRed ? 0 : baseScore;
+        value = isRed ? 0 : baseScore;
+        break;
       case "small-double":
-        return isSmall ? baseScore * 2 : baseScore;
+        value = isSmall ? baseScore * 2 : baseScore;
+        break;
       case "large-double":
-        return isLarge ? baseScore * 2 : baseScore;
+        value = isLarge ? baseScore * 2 : baseScore;
+        break;
       case "small-penalty":
-        return isSmall ? -baseScore : baseScore;
+        value = isSmall ? -baseScore : baseScore;
+        break;
       case "half-manifest":
-        return Math.floor(baseScore / 2);
+        value = Math.floor(baseScore / 2);
+        break;
       case "standard":
-        return baseScore;
+        value = baseScore;
+        break;
     }
+
+    const mask = definition.hotCellMask;
+    const cellCount = definition.cells.length;
+    if (!mask || cellCount === 0) {
+      return value;
+    }
+
+    const weightedSum = mask.reduce(
+      (sum, hot) => sum + (hot ? inspector.hotScoreMultiplier : 1),
+      0,
+    );
+
+    return Math.round((value * weightedSum) / cellCount);
   }
 
   private hasTopRowCargo() {
     return this.cargoGrid[0].some((cell) => cell !== null);
   }
 
-  private endGame() {
+  private endGame(outcome: "complete" | "overflow" | "caught") {
     if (this.isGameOver) {
       return;
     }
@@ -1128,28 +1411,43 @@ export class BootScene extends Phaser.Scene {
       cargo.hitbox.setAlpha(0.16);
     }
 
+    const headline =
+      outcome === "caught"
+        ? "BUSTED"
+        : outcome === "overflow"
+          ? "BAY FULL"
+          : "RUN COMPLETE";
+    const subline =
+      outcome === "caught"
+        ? "HOT MANIFEST DISCOVERED"
+        : outcome === "overflow"
+          ? "CARGO HIT THE TOP"
+          : "TIMER EXPIRED";
+    const strokeColor = outcome === "caught" ? palette.hazard : palette.previewCell;
+
     this.add
-      .rectangle(360, 640, 420, 160, 0x050505, 0.86)
-      .setStrokeStyle(3, palette.hazard, 0.9)
+      .rectangle(360, 652, 420, 210, 0x050505, 0.86)
+      .setStrokeStyle(3, strokeColor, 0.9)
       .setDepth(50);
 
     this.add
       .text(
         360,
-        618,
+        616,
         [
-          "RUN COMPLETE",
+          headline,
+          subline,
           `FINAL SCORE ${this.formatScore(this.score)}`,
           isNewBest
             ? "NEW DOCK RECORD"
-            : `DOCK BEST ${this.formatScore(previousBest.score)}`,
+            : `DOCK BEST ${this.formatScore(previousBest!.score)}`,
         ].join("\n"),
         {
           align: "center",
           color: "#f1f1e6",
           fontFamily: "monospace",
-          fontSize: "26px",
-          lineSpacing: 12,
+          fontSize: "24px",
+          lineSpacing: 10,
         },
       )
       .setOrigin(0.5)
