@@ -88,6 +88,8 @@ const bay = {
 
 const inspector = {
   trackY: 300,
+  /** Display height for the tiled rail texture (source art is horizontal). */
+  railDisplayHeight: 40,
   offScreenMargin: 96,
   passDurationMs: 9300,
   idleWaitMinMs: 5000,
@@ -96,12 +98,15 @@ const inspector = {
   firstIdleMaxMs: 6000,
   beamFill: 0xff9a12,
   beamStroke: 0xffe08a,
-  railColor: 0xd4a024,
-  droneBodyStroke: 0xb8893a,
   pulsePeriodMs: 680,
   hotCellChance: 0.077,
   hotScoreMultiplier: 5,
 };
+
+const inspectorTextureKeys = {
+  rail: "inspector-rail",
+  drone: "inspector-drone",
+} as const;
 
 const conveyorBlock = {
   size: 32,
@@ -275,11 +280,9 @@ export class BootScene extends Phaser.Scene {
   private topScoreText?: Phaser.GameObjects.Text;
   private timerText?: Phaser.GameObjects.Text;
   private inspectorProbeX = 0;
-  private inspectorRail?: Phaser.GameObjects.Line;
+  private inspectorRail?: Phaser.GameObjects.TileSprite;
   private inspectorBeam?: Phaser.GameObjects.Rectangle;
-  private inspectorDrone?: Phaser.GameObjects.Container;
-  private inspectorDroneBody?: Phaser.GameObjects.Rectangle;
-  private inspectorDroneLens?: Phaser.GameObjects.Rectangle;
+  private inspectorDrone?: Phaser.GameObjects.Image;
   private inspectorPulsePhase = 0;
   private inspectorMode: "idle" | "passing" = "idle";
   private inspectorIdleMs = 0;
@@ -307,6 +310,9 @@ export class BootScene extends Phaser.Scene {
         }
       }
     }
+
+    this.load.image(inspectorTextureKeys.rail, "/assets/inspector/inspector-rail.png");
+    this.load.image(inspectorTextureKeys.drone, "/assets/inspector/inspector-drone.png");
   }
 
   create() {
@@ -442,24 +448,34 @@ export class BootScene extends Phaser.Scene {
         .setOrigin(0);
     }
 
+    const railBottom = inspector.trackY + inspector.railDisplayHeight / 2;
+    const labelY = (railBottom + bay.y) / 2;
+
     this.add
-      .text(bay.x, bay.y - 30, "PERSONAL CARGO BAY", {
+      .text(bay.x, labelY, "PERSONAL CARGO BAY", {
         fontFamily: "monospace",
         fontSize: "18px",
         color: "#c4a15a",
       })
-      .setResolution(2);
+      .setOrigin(0, 0.5)
+      .setResolution(2)
+      .setDepth(14);
   }
 
   private drawInspectorRig() {
-    const railLeft = 0;
-    const railRight = this.scale.width;
+    const width = this.scale.width;
 
     this.inspectorRail = this.add
-      .line(0, 0, railLeft, inspector.trackY, railRight, inspector.trackY, inspector.railColor, 1)
-      .setOrigin(0)
-      .setLineWidth(4)
-      .setDepth(13);
+      .tileSprite(
+        width / 2,
+        inspector.trackY,
+        width,
+        inspector.railDisplayHeight,
+        inspectorTextureKeys.rail,
+      )
+      .setOrigin(0.5, 0.5)
+      .setDepth(13)
+      .setAlpha(1);
 
     const beamHeight = bay.y + bay.rows * bay.cell - inspector.trackY + 6;
     this.inspectorBeam = this.add
@@ -475,24 +491,18 @@ export class BootScene extends Phaser.Scene {
       .setStrokeStyle(2, inspector.beamStroke, 0.42)
       .setDepth(12);
 
-    this.inspectorDroneBody = this.add
-      .rectangle(0, 0, 34, 16, 0x2a2418, 0.96)
-      .setStrokeStyle(2, inspector.droneBodyStroke, 0.55);
-    this.inspectorDroneLens = this.add
-      .rectangle(0, 10, 14, 8, 0x1f170c, 0.94)
-      .setStrokeStyle(2, inspector.beamStroke, 0.72);
-    this.inspectorDrone = this.add.container(this.scale.width / 2, inspector.trackY, [
-      this.inspectorDroneBody,
-      this.inspectorDroneLens,
-    ]);
-    this.inspectorDrone.setDepth(15);
+    this.inspectorDrone = this.add
+      .image(this.scale.width / 2, inspector.trackY, inspectorTextureKeys.drone)
+      .setOrigin(0.5, 0.55)
+      .setDisplaySize(72, 48)
+      .setDepth(15)
+      .setAlpha(1);
 
     this.inspectorMode = "idle";
     this.inspectorIdleMs = Phaser.Math.Between(
       inspector.firstIdleMinMs,
       inspector.firstIdleMaxMs,
     );
-    this.inspectorRail.setVisible(false);
     this.inspectorBeam.setVisible(false);
     this.inspectorDrone.setVisible(false);
   }
@@ -516,7 +526,6 @@ export class BootScene extends Phaser.Scene {
     this.inspectorMode = "passing";
     this.inspectorProbeX = this.inspectorPassStartX;
 
-    this.inspectorRail?.setVisible(true);
     this.inspectorBeam?.setVisible(true);
     this.inspectorDrone?.setVisible(true);
     this.inspectorBeam?.setX(this.inspectorProbeX);
@@ -527,7 +536,6 @@ export class BootScene extends Phaser.Scene {
     this.inspectorLastExitRight = this.inspectorPassEndX > this.inspectorPassStartX;
     this.inspectorMode = "idle";
     this.inspectorIdleMs = Phaser.Math.Between(inspector.idleWaitMinMs, inspector.idleWaitMaxMs);
-    this.inspectorRail?.setVisible(false);
     this.inspectorBeam?.setVisible(false);
     this.inspectorDrone?.setVisible(false);
   }
@@ -562,9 +570,7 @@ export class BootScene extends Phaser.Scene {
     const beamStrokeA = Phaser.Math.Linear(0.28, 0.78, pulse);
     this.inspectorBeam.setFillStyle(inspector.beamFill, beamFillA);
     this.inspectorBeam.setStrokeStyle(2, inspector.beamStroke, beamStrokeA);
-    this.inspectorRail.setAlpha(Phaser.Math.Linear(0.5, 1, pulse));
-    this.inspectorDroneBody?.setStrokeStyle(2, inspector.droneBodyStroke, Phaser.Math.Linear(0.38, 0.82, pulse));
-    this.inspectorDroneLens?.setStrokeStyle(2, inspector.beamStroke, Phaser.Math.Linear(0.5, 0.98, pulse));
+    this.inspectorDrone.setScale(Phaser.Math.Linear(0.97, 1.03, pulse));
 
     const bayWidth = bay.columns * bay.cell;
     const bayRight = bay.x + bayWidth;

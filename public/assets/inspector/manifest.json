@@ -1,0 +1,20 @@
+{
+  "generatedAt": "2026-04-22T19:10:51.583Z",
+  "model": "gpt-image-1.5",
+  "quality": "low",
+  "source": "OpenAI images API",
+  "files": [
+    {
+      "file": "public/assets/inspector/inspector-rail.png",
+      "id": "inspector-rail",
+      "prompt": "Use case: stylized-concept\nAsset type: horizontal rail texture for a 2D game inspector rig\nPrimary request: old industrial guidance rail segment, cassette retro-futurist cargo dock style, edge-to-edge horizontal strip, no text\nStyle/medium: gritty hand-painted game sprite texture, readable when scaled down to a thin line\nComposition/framing: straight-on orthographic strip, centered lane hardware and brackets, minimal perspective\nColor palette: oxidized brass, dark steel, hazard amber highlights, soot, grease\nMaterials/textures: worn metal, rivets, welded seams, scratched paint, oil grime\nConstraints: seamless-feeling horizontal strip, no letters, no numbers, no logos, no watermark, no decorative frame\nAvoid: glowing neon bars, clean sci-fi rails, glossy plastic, modern UI stripe, perspective tunnel",
+      "status": "generated"
+    },
+    {
+      "file": "public/assets/inspector/inspector-drone.png",
+      "id": "inspector-drone",
+      "prompt": "Use case: stylized-concept\nAsset type: small side-view drone sprite for a 2D cargo puzzle game\nPrimary request: inspector surveillance drone riding a rail, chunky industrial body with central scanner lens, cassette retro-futurist\nStyle/medium: gritty hand-painted game sprite, simple readable silhouette for tiny on-screen size\nComposition/framing: side profile, centered subject, compact shape with slight underside scanner pod\nColor palette: blackened steel, burnt bronze, dusty amber scanner accents, grime\nMaterials/textures: scratched metal panels, rivets, bolted seams, old plastic lens, oil stains\nLighting/mood: low industrial light with subtle amber glow around scanner lens\nConstraints: single drone only, no text, no letters, no numbers, no logos, no watermark, no background scene\nAvoid: character faces, cute toy drone, glossy consumer electronics, modern sleek sci-fi, photoreal product shot",
+      "status": "generated"
+    }
+  ]
+}

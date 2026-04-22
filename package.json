@@ -7,6 +7,7 @@
     "dev": "vite",
     "build": "tsc && vite build",
     "assets:cells": "node scripts/generate-cell-assets.mjs",
+    "assets:inspector": "node scripts/generate-inspector-assets.mjs",
     "assets:home": "node scripts/generate-home-assets.mjs",
     "assets:share": "node scripts/generate-share-assets.mjs",
     "assets:audio": "node scripts/generate-audio-assets.mjs",
