@@ -108,6 +108,11 @@ const inspectorTextureKeys = {
   drone: "inspector-drone",
 } as const;
 
+const dockTextureKeys = {
+  deadSpace: "dock-dead-space",
+  cargoBayBackdrop: "dock-cargo-bay-backdrop",
+} as const;
+
 const conveyorBlock = {
   size: 32,
   step: 36,
@@ -332,6 +337,12 @@ export class BootScene extends Phaser.Scene {
         `/assets/conveyor/belt-strip-${id}.png`,
       );
     }
+
+    this.load.image(dockTextureKeys.deadSpace, "/assets/dock/dead-space.png");
+    this.load.image(
+      dockTextureKeys.cargoBayBackdrop,
+      "/assets/dock/cargo-bay-backdrop.png",
+    );
   }
 
   create() {
@@ -403,12 +414,22 @@ export class BootScene extends Phaser.Scene {
   private drawDockPanel() {
     const { width, height } = this.scale;
 
-    this.add.rectangle(0, 0, width, height, palette.background).setOrigin(0);
+    const deadSpace = this.add
+      .image(0, 0, dockTextureKeys.deadSpace)
+      .setOrigin(0, 0)
+      .setDepth(0);
+    const coverScale = Math.max(width / deadSpace.width, height / deadSpace.height);
+    deadSpace.setScale(coverScale);
+    deadSpace.setPosition(
+      (width - deadSpace.displayWidth) / 2,
+      (height - deadSpace.displayHeight) / 2,
+    );
 
     for (let y = 24; y < height; y += 24) {
       this.add
-        .line(0, 0, 0, y, width, y, palette.grid, 0.24)
-        .setOrigin(0);
+        .line(0, 0, 0, y, width, y, palette.grid, 0.1)
+        .setOrigin(0)
+        .setDepth(0);
     }
   }
 
@@ -457,17 +478,20 @@ export class BootScene extends Phaser.Scene {
   }
 
   private drawCargoBay() {
+    const bayPixelW = bay.columns * bay.cell;
+    const bayPixelH = bay.rows * bay.cell;
+
     this.add
-      .rectangle(
-        bay.x,
-        bay.y,
-        bay.columns * bay.cell,
-        bay.rows * bay.cell,
-        palette.panel,
-        0.95,
-      )
+      .image(bay.x + bayPixelW / 2, bay.y + bayPixelH / 2, dockTextureKeys.cargoBayBackdrop)
+      .setOrigin(0.5, 0.5)
+      .setDisplaySize(bayPixelW, bayPixelH)
+      .setDepth(0);
+
+    this.add
+      .rectangle(bay.x, bay.y, bayPixelW, bayPixelH, palette.panel, 0.14)
       .setOrigin(0)
-      .setStrokeStyle(4, palette.panelLine, 0.9);
+      .setStrokeStyle(4, palette.panelLine, 0.9)
+      .setDepth(0);
 
     for (let col = 1; col < bay.columns; col += 1) {
       const x = bay.x + col * bay.cell;

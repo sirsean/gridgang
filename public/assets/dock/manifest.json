@@ -1,0 +1,20 @@
+{
+  "generatedAt": "2026-04-23T00:37:05.882Z",
+  "model": "gpt-image-1.5",
+  "quality": "low",
+  "source": "OpenAI images API",
+  "files": [
+    {
+      "file": "public/assets/dock/dead-space.png",
+      "id": "dead-space",
+      "prompt": "Use case: stylized-concept\nStyle/medium: gritty cassette futurism, hand-painted game environment texture, readable when downsampled\nColor palette: soot black, oxidized steel, rust brown, dark grease, dull amber hazard grime, faded institutional teal\nMaterials: pitted metal, stamped plates, rivets, cable runs, grime streaks, VHS-era industrial wear\nLighting/mood: low dock light, harsh micro-contrast, claustrophobic freight atmosphere\nConstraints: no text, no letters, no logos, no numbers, no watermark, no outer frame, no UI, no characters\nAvoid: clean sci-fi corridors, glossy surfaces, bright neon, stock photo lighting, isometric room diorama\nAsset type: full-screen vertical environment backdrop for a 2D cargo puzzle game (portrait 720×960 playfield).\nComposition/framing: flat orthographic wall and bulkhead collage filling the entire frame edge-to-edge.\nPrimary subject: grimy freight dock dead space — layered steel bulkheads, conduit trays, inspection hatches,\nstencil-faded hazard bands (no readable words), cable bundles, weld seams, water stains, dust.\nSpatial layout: dense industrial wall treatment suitable as a static background; no single vanishing tunnel.\nVariation note: heavier vertical conduit rhythm on one side, asymmetric rust blooms, subtle horizontal deck seams.",
+      "status": "generated"
+    },
+    {
+      "file": "public/assets/dock/cargo-bay-backdrop.png",
+      "id": "cargo-bay-backdrop",
+      "prompt": "Use case: stylized-concept\nStyle/medium: gritty cassette futurism, hand-painted game environment texture, readable when downsampled\nColor palette: soot black, oxidized steel, rust brown, dark grease, dull amber hazard grime, faded institutional teal\nMaterials: pitted metal, stamped plates, rivets, cable runs, grime streaks, VHS-era industrial wear\nLighting/mood: low dock light, harsh micro-contrast, claustrophobic freight atmosphere\nConstraints: no text, no letters, no logos, no numbers, no watermark, no outer frame, no UI, no characters\nAvoid: clean sci-fi corridors, glossy surfaces, bright neon, stock photo lighting, isometric room diorama\nAsset type: rectangular floor/deck panel for a personal cargo stowage grid (480×600 game units, 12×15 cells).\nComposition/framing: strict top-down orthographic view of ONE contiguous deck surface filling the entire frame.\nPrimary subject: worn alloy loading deck — recessed tie-down rings, scratched skid marks, oil splatter,\nfaint grid wear from years of pallets, chipped yellow-black hazard tape at the outer margin (abstract, no text),\nsubtle panel seams aligned to a coarse grid so a 40px cell grid can be drawn on top in-game.\nVariation note: slightly darker center, brighter oxidized edges; include micro-debris and paint chips for grit.",
+      "status": "generated"
+    }
+  ]
+}
