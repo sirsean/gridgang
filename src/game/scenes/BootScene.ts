@@ -113,6 +113,9 @@ const dockTextureKeys = {
   cargoBayBackdrop: "dock-cargo-bay-backdrop",
 } as const;
 
+/** Procedural film grain; registered on the scene texture manager once. */
+const bayNoiseTextureKey = "dock-bay-noise";
+
 const conveyorBlock = {
   size: 32,
   step: 36,
@@ -488,10 +491,21 @@ export class BootScene extends Phaser.Scene {
       .setDepth(0);
 
     this.add
-      .rectangle(bay.x, bay.y, bayPixelW, bayPixelH, palette.panel, 0.14)
+      .rectangle(bay.x, bay.y, bayPixelW, bayPixelH, palette.panel, 0.055)
       .setOrigin(0)
       .setStrokeStyle(4, palette.panelLine, 0.9)
       .setDepth(0);
+
+    this.registerBayNoiseTextureIfNeeded();
+    if (this.textures.exists(bayNoiseTextureKey)) {
+      this.add
+        .image(bay.x + bayPixelW / 2, bay.y + bayPixelH / 2, bayNoiseTextureKey)
+        .setOrigin(0.5, 0.5)
+        .setDisplaySize(bayPixelW, bayPixelH)
+        .setDepth(0)
+        .setAlpha(0.1)
+        .setBlendMode(Phaser.BlendModes.OVERLAY);
+    }
 
     for (let col = 1; col < bay.columns; col += 1) {
       const x = bay.x + col * bay.cell;
@@ -519,6 +533,40 @@ export class BootScene extends Phaser.Scene {
       .setOrigin(0, 0.5)
       .setResolution(2)
       .setDepth(14);
+  }
+
+  private registerBayNoiseTextureIfNeeded() {
+    if (this.textures.exists(bayNoiseTextureKey)) {
+      return;
+    }
+
+    const size = 128;
+    const canvas = document.createElement("canvas");
+    canvas.width = size;
+    canvas.height = size;
+    const ctx = canvas.getContext("2d");
+
+    if (!ctx) {
+      return;
+    }
+
+    const imageData = ctx.createImageData(size, size);
+    const { data } = imageData;
+
+    for (let i = 0; i < data.length; i += 4) {
+      const v = Math.floor(Math.random() * 256);
+      data[i] = v;
+      data[i + 1] = v;
+      data[i + 2] = v;
+      data[i + 3] = 255;
+    }
+
+    ctx.putImageData(imageData, 0, 0);
+
+    if (!this.textures.addCanvas(bayNoiseTextureKey, canvas)) {
+      canvas.width = 0;
+      canvas.height = 0;
+    }
   }
 
   private drawInspectorRig() {
