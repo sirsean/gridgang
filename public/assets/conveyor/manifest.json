@@ -1,0 +1,32 @@
+{
+  "generatedAt": "2026-04-22T22:30:08.491Z",
+  "model": "gpt-image-1.5",
+  "quality": "low",
+  "source": "OpenAI images API",
+  "files": [
+    {
+      "file": "public/assets/conveyor/belt-strip-01.png",
+      "id": "belt-strip-01",
+      "prompt": "Use case: stylized-concept\nAsset type: horizontal seamless conveyor belt strip tile for a 2D retro-futurist cargo puzzle game\nStyle/medium: gritty cassette retro-futurism, hand-painted game sprite texture, readable when downsampled\nComposition/framing: flat orthographic top-down or slight tilt-down view of ONE belt module only, fills the entire frame edge-to-edge as a wide horizontal panorama strip\nPrimary subject: grimy rusted industrial roller conveyor bed, old steel side rails, worn rubber or metal rollers, chain gaps, oil drips\nColor palette: soot black, rust orange-brown, oxidized steel, dark grease, dull amber safety grime\nMaterials/textures: pitted rust, flaking paint, welded seams, scratched rollers, dust, caked oil, bent guard lips\nLighting/mood: low warehouse light, harsh micro-contrast, dirty dock atmosphere\nConstraints: horizontally seamless — the left edge must visually continue the right edge when tiled side-by-side; no text, no letters, no logos, no numbers, no watermark, no outer frame, no UI\nAvoid: clean factory belts, glossy sci-fi tread, isometric full room, cargo boxes on the belt, people, perspective vanishing tunnel, warning chevrons as a dominant motif\nVariation note 1: emphasize closely spaced steel rollers and a center grease line; subtle staggered roller wear pattern that still tiles horizontally.",
+      "status": "generated"
+    },
+    {
+      "file": "public/assets/conveyor/belt-strip-02.png",
+      "id": "belt-strip-02",
+      "prompt": "Use case: stylized-concept\nAsset type: horizontal seamless conveyor belt strip tile for a 2D retro-futurist cargo puzzle game\nStyle/medium: gritty cassette retro-futurism, hand-painted game sprite texture, readable when downsampled\nComposition/framing: flat orthographic top-down or slight tilt-down view of ONE belt module only, fills the entire frame edge-to-edge as a wide horizontal panorama strip\nPrimary subject: grimy rusted industrial roller conveyor bed, old steel side rails, worn rubber or metal rollers, chain gaps, oil drips\nColor palette: soot black, rust orange-brown, oxidized steel, dark grease, dull amber safety grime\nMaterials/textures: pitted rust, flaking paint, welded seams, scratched rollers, dust, caked oil, bent guard lips\nLighting/mood: low warehouse light, harsh micro-contrast, dirty dock atmosphere\nConstraints: horizontally seamless — the left edge must visually continue the right edge when tiled side-by-side; no text, no letters, no logos, no numbers, no watermark, no outer frame, no UI\nAvoid: clean factory belts, glossy sci-fi tread, isometric full room, cargo boxes on the belt, people, perspective vanishing tunnel, warning chevrons as a dominant motif\nVariation note 2: more pronounced rust patches and chipped side rails; include faint roller shadow rhythm that repeats at the frame edges for tiling.",
+      "status": "generated"
+    },
+    {
+      "file": "public/assets/conveyor/belt-strip-03.png",
+      "id": "belt-strip-03",
+      "prompt": "Use case: stylized-concept\nAsset type: horizontal seamless conveyor belt strip tile for a 2D retro-futurist cargo puzzle game\nStyle/medium: gritty cassette retro-futurism, hand-painted game sprite texture, readable when downsampled\nComposition/framing: flat orthographic top-down or slight tilt-down view of ONE belt module only, fills the entire frame edge-to-edge as a wide horizontal panorama strip\nPrimary subject: grimy rusted industrial roller conveyor bed, old steel side rails, worn rubber or metal rollers, chain gaps, oil drips\nColor palette: soot black, rust orange-brown, oxidized steel, dark grease, dull amber safety grime\nMaterials/textures: pitted rust, flaking paint, welded seams, scratched rollers, dust, caked oil, bent guard lips\nLighting/mood: low warehouse light, harsh micro-contrast, dirty dock atmosphere\nConstraints: horizontally seamless — the left edge must visually continue the right edge when tiled side-by-side; no text, no letters, no logos, no numbers, no watermark, no outer frame, no UI\nAvoid: clean factory belts, glossy sci-fi tread, isometric full room, cargo boxes on the belt, people, perspective vanishing tunnel, warning chevrons as a dominant motif\nVariation note 3: darker overall, heavier oil staining between rollers; keep the repeating mechanical pitch consistent for horizontal seamless wrap.",
+      "status": "generated"
+    },
+    {
+      "file": "public/assets/conveyor/belt-strip-04.png",
+      "id": "belt-strip-04",
+      "prompt": "Use case: stylized-concept\nAsset type: horizontal seamless conveyor belt strip tile for a 2D retro-futurist cargo puzzle game\nStyle/medium: gritty cassette retro-futurism, hand-painted game sprite texture, readable when downsampled\nComposition/framing: flat orthographic top-down or slight tilt-down view of ONE belt module only, fills the entire frame edge-to-edge as a wide horizontal panorama strip\nPrimary subject: grimy rusted industrial roller conveyor bed, old steel side rails, worn rubber or metal rollers, chain gaps, oil drips\nColor palette: soot black, rust orange-brown, oxidized steel, dark grease, dull amber safety grime\nMaterials/textures: pitted rust, flaking paint, welded seams, scratched rollers, dust, caked oil, bent guard lips\nLighting/mood: low warehouse light, harsh micro-contrast, dirty dock atmosphere\nConstraints: horizontally seamless — the left edge must visually continue the right edge when tiled side-by-side; no text, no letters, no logos, no numbers, no watermark, no outer frame, no UI\nAvoid: clean factory belts, glossy sci-fi tread, isometric full room, cargo boxes on the belt, people, perspective vanishing tunnel, warning chevrons as a dominant motif\nVariation note 4: slightly more battered roller ends and small dents in the deck plate; seams and rivet lines must align for seamless horizontal repeat.",
+      "status": "generated"
+    }
+  ]
+}

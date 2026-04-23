@@ -114,6 +114,16 @@ const conveyorBlock = {
   hitPadding: 18,
 };
 
+const conveyorBeltVariants = 4;
+/** Target vertical pitch for stacked strips; actual strip height fills `conveyor.height` exactly. */
+const conveyorBeltNominalStripHeight = 48;
+/** Multiply tint on belt art so cargo reads brighter on top (Phaser multiplies RGB per pixel). */
+const conveyorBeltTint = 0x4a4a4a;
+
+function conveyorBeltTextureKey(variant: number) {
+  return `conveyor-belt-${variant.toString().padStart(2, "0")}`;
+}
+
 const bayBlock = {
   size: 38,
   step: bay.cell,
@@ -291,6 +301,7 @@ export class BootScene extends Phaser.Scene {
   private inspectorPassEndX = 0;
   /** True if the last pass finished by leaving past the right edge. */
   private inspectorLastExitRight: boolean | null = null;
+  private conveyorBeltTiles: Phaser.GameObjects.TileSprite[] = [];
 
   constructor(private readonly mission: DockMission = defaultMission) {
     super("boot");
@@ -313,6 +324,14 @@ export class BootScene extends Phaser.Scene {
 
     this.load.image(inspectorTextureKeys.rail, "/assets/inspector/inspector-rail.png");
     this.load.image(inspectorTextureKeys.drone, "/assets/inspector/inspector-drone.png");
+
+    for (let variant = 1; variant <= conveyorBeltVariants; variant += 1) {
+      const id = variant.toString().padStart(2, "0");
+      this.load.image(
+        conveyorBeltTextureKey(variant),
+        `/assets/conveyor/belt-strip-${id}.png`,
+      );
+    }
   }
 
   create() {
@@ -367,6 +386,10 @@ export class BootScene extends Phaser.Scene {
       }
     }
 
+    for (const belt of this.conveyorBeltTiles) {
+      belt.tilePositionX -= movement;
+    }
+
     this.despawnConveyorCargo();
 
     this.spawnElapsed += delta;
@@ -395,6 +418,7 @@ export class BootScene extends Phaser.Scene {
     this.add
       .rectangle(0, conveyor.y, width, conveyor.height, palette.panel)
       .setOrigin(0)
+      .setDepth(2)
       .setStrokeStyle(3, palette.panelLine, 0.8);
 
     this.add
@@ -403,21 +427,32 @@ export class BootScene extends Phaser.Scene {
         fontSize: "18px",
         color: "#c4a15a",
       })
-      .setResolution(2);
+      .setResolution(2)
+      .setDepth(3);
 
-    const dashY = [108, 216] as const;
-    const dashW = 30;
-    const dashH = 10;
-    const dashGap = 18;
-    const pitch = dashW + dashGap;
-    const startLeft = -dashGap;
+    this.conveyorBeltTiles = [];
+    const stripCount = Math.max(
+      1,
+      Math.ceil(conveyor.height / conveyorBeltNominalStripHeight),
+    );
+    const stripHeight = conveyor.height / stripCount;
 
-    for (const y of dashY) {
-      for (let left = startLeft; left < width + dashW; left += pitch) {
-        this.add
-          .rectangle(left + dashW / 2, y, dashW, dashH, palette.panelLine, 0.48)
-          .setOrigin(0.5, 0.5);
-      }
+    for (let index = 0; index < stripCount; index += 1) {
+      const variant = (index % conveyorBeltVariants) + 1;
+      const y = conveyor.y + (index + 0.5) * stripHeight;
+      const belt = this.add
+        .tileSprite(
+          width / 2,
+          y,
+          width,
+          stripHeight,
+          conveyorBeltTextureKey(variant),
+        )
+        .setOrigin(0.5, 0.5)
+        .setDepth(2)
+        .setTint(conveyorBeltTint)
+        .setTilePosition(Phaser.Math.Between(0, 400) + index * 37, 0);
+      this.conveyorBeltTiles.push(belt);
     }
   }
 
@@ -474,7 +509,7 @@ export class BootScene extends Phaser.Scene {
         inspectorTextureKeys.rail,
       )
       .setOrigin(0.5, 0.5)
-      .setDepth(13)
+      .setDepth(1)
       .setAlpha(1);
 
     const beamHeight = bay.y + bay.rows * bay.cell - inspector.trackY + 6;
@@ -672,6 +707,7 @@ export class BootScene extends Phaser.Scene {
 
     this.conveyorCargo.push(cargo);
     this.cargoByHitbox.set(hitbox, cargo);
+    container.setDepth(4);
   }
 
   private createSpawnDefinition(baseDefinition: ShapeDefinition) {
@@ -906,7 +942,7 @@ export class BootScene extends Phaser.Scene {
       }
     }
 
-    cargo.container.setDepth(0);
+    cargo.container.setDepth(4);
     cargo.hitbox.setPosition(cargo.returnX, cargo.returnY);
     cargo.container.setPosition(
       cargo.returnX + conveyorBlock.hitPadding,

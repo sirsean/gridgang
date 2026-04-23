@@ -10,6 +10,7 @@
     "assets:inspector": "node scripts/generate-inspector-assets.mjs",
     "assets:home": "node scripts/generate-home-assets.mjs",
     "assets:share": "node scripts/generate-share-assets.mjs",
+    "assets:conveyor": "node scripts/generate-conveyor-belt-assets.mjs",
     "assets:audio": "node scripts/generate-audio-assets.mjs",
     "preview": "vite preview",
     "deploy": "vite build && wrangler deploy",
