@@ -55,6 +55,86 @@ const soundSpecs = [
     prompt:
       "Heavy steel cargo container crashing onto other metal containers in a cargo bay. Powerful low thud, hard steel clang, hollow resonance, rattling metal tail, short warehouse reverb, satisfying game impact. No explosion, no music, no voices.",
   },
+  {
+    id: "container-drag-scrape",
+    filenamePrefix: "container-drag-scrape",
+    variants: 3,
+    durationSeconds: 0.5,
+    loop: false,
+    promptInfluence: 0.55,
+    prompt:
+      "Very short subtle metal-on-metal scrape and grit as a heavy hollow shipping container shifts slightly while being dragged along a steel conveyor. Quiet dry warehouse foley, no impact, no footsteps, no music, no voices.",
+  },
+  {
+    id: "ui-score-chime",
+    filenamePrefix: "ui-score-chime",
+    variants: 3,
+    durationSeconds: 0.5,
+    loop: false,
+    promptInfluence: 0.5,
+    prompt:
+      "Bright retro arcade puzzle game score: two quick ascending pleasant tones in a row, clean digital chime character, tight and dry, satisfying small reward. No melody beyond two notes, no music bed, no voices.",
+  },
+  {
+    id: "ui-bonus-chime",
+    filenamePrefix: "ui-bonus-chime",
+    variants: 3,
+    durationSeconds: 0.5,
+    loop: false,
+    promptInfluence: 0.5,
+    prompt:
+      "Retro arcade bonus reward: three short ascending cheerful sine-like bleeps in quick succession, light and sparkly, dry game UI sound. No full tune, no music, no voices.",
+  },
+  {
+    id: "ui-socket-bonus",
+    filenamePrefix: "ui-socket-bonus",
+    variants: 3,
+    durationSeconds: 0.5,
+    loop: false,
+    promptInfluence: 0.52,
+    prompt:
+      "Special power-up reward sting: two clear ascending magical chime tones with a subtle sparkly tail, premium puzzle-game feel, dry and close. No choir, no music, no voices.",
+  },
+  {
+    id: "ui-game-over",
+    filenamePrefix: "ui-game-over",
+    variants: 3,
+    durationSeconds: 1.0,
+    loop: false,
+    promptInfluence: 0.55,
+    prompt:
+      "Game over defeat sting: brief low filtered noise burst then a sad descending saw-like tone that drops in pitch and fades, industrial warehouse mood, heavy and final. No explosion, no music, no voices.",
+  },
+  {
+    id: "clock-tick-normal",
+    filenamePrefix: "clock-tick-normal",
+    variants: 3,
+    durationSeconds: 0.5,
+    loop: false,
+    promptInfluence: 0.48,
+    prompt:
+      "Single very short light mechanical UI timer tick, soft square-ish digital blip, neutral and unobtrusive, dry close game HUD sound. The hit is in the first instant; keep the rest of the half-second clip nearly silent. No alarm, no music, no voices.",
+  },
+  {
+    id: "clock-tick-amber",
+    filenamePrefix: "clock-tick-amber",
+    variants: 3,
+    durationSeconds: 0.5,
+    loop: false,
+    promptInfluence: 0.5,
+    prompt:
+      "Single short urgent timer warning tick, slightly brighter and sharper digital blip than a normal tick, tension but not panic, dry HUD game sound. The hit is in the first instant; keep the rest of the half-second clip nearly silent. No music, no voices.",
+  },
+  {
+    id: "clock-tick-red",
+    filenamePrefix: "clock-tick-red",
+    variants: 3,
+    durationSeconds: 0.5,
+    loop: false,
+    promptInfluence: 0.52,
+    prompt:
+      "Single harsh low critical timer alarm tick, short gritty saw-like digital beep, urgent danger feel, dry game sound. The hit is in the first instant; keep the rest of the half-second clip nearly silent. No sustained alarm loop, no music, no voices.",
+  },
 ];
 
 const defaults = {

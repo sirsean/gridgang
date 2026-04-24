@@ -1,7 +1,20 @@
 import * as Phaser from "phaser";
 
 type ClockTickMode = "normal" | "amber" | "red";
-type SoundAssetGroup = "conveyor" | "grab" | "drop" | "fall" | "land";
+type SoundAssetGroup =
+  | "conveyor"
+  | "grab"
+  | "drop"
+  | "fall"
+  | "land"
+  | "drag"
+  | "score"
+  | "bonus"
+  | "socketBonus"
+  | "gameOver"
+  | "clockNormal"
+  | "clockAmber"
+  | "clockRed";
 
 const audioPath = "/assets/audio/sfx";
 const soundAssets: Record<
@@ -13,12 +26,18 @@ const soundAssets: Record<
   drop: { prefix: "container-drop", variants: 4, volume: 0.38 },
   fall: { prefix: "container-whoosh", variants: 4, volume: 0.34 },
   land: { prefix: "container-land", variants: 5, volume: 0.58 },
+  drag: { prefix: "container-drag-scrape", variants: 3, volume: 0.22 },
+  score: { prefix: "ui-score-chime", variants: 3, volume: 0.42 },
+  bonus: { prefix: "ui-bonus-chime", variants: 3, volume: 0.42 },
+  socketBonus: { prefix: "ui-socket-bonus", variants: 3, volume: 0.44 },
+  gameOver: { prefix: "ui-game-over", variants: 3, volume: 0.52 },
+  clockNormal: { prefix: "clock-tick-normal", variants: 3, volume: 0.26 },
+  clockAmber: { prefix: "clock-tick-amber", variants: 3, volume: 0.3 },
+  clockRed: { prefix: "clock-tick-red", variants: 3, volume: 0.34 },
 };
 
 export class SoundFx {
   private scene: Phaser.Scene;
-  private context?: AudioContext;
-  private master?: GainNode;
   private conveyorSound?: Phaser.Sound.BaseSound;
   private conveyorEnabled = false;
   private isDestroyed = false;
@@ -43,10 +62,14 @@ export class SoundFx {
       return;
     }
 
-    this.ensureContext();
+    this.scene.sound.unlock();
 
-    if (this.context?.state === "suspended") {
-      await this.context.resume();
+    if (
+      "context" in this.scene.sound &&
+      this.scene.sound.context &&
+      this.scene.sound.context.state === "suspended"
+    ) {
+      await this.scene.sound.context.resume();
     }
 
     if (this.conveyorEnabled) {
@@ -85,7 +108,10 @@ export class SoundFx {
     }
 
     this.lastDragSoundAt = now;
-    this.playNoise({ duration: 0.035, gain: 0.05, filterFrequency: 1300 });
+    this.playVariant("drag", {
+      detune: this.randomDetune(50),
+      rate: this.randomRate(0.92, 1.12),
+    });
   }
 
   drop() {
@@ -126,76 +152,60 @@ export class SoundFx {
   }
 
   score() {
-    this.playTone({ frequency: 740, duration: 0.08, gain: 0.12, type: "triangle" });
-    window.setTimeout(() => {
-      this.playTone({
-        frequency: 1080,
-        duration: 0.09,
-        gain: 0.11,
-        type: "triangle",
-      });
-    }, 55);
+    this.playVariant("score", {
+      detune: this.randomDetune(40),
+      rate: this.randomRate(0.96, 1.06),
+    });
   }
 
   bonus() {
-    this.playTone({ frequency: 520, duration: 0.08, gain: 0.12, type: "sine" });
-    window.setTimeout(() => {
-      this.playTone({ frequency: 780, duration: 0.08, gain: 0.12, type: "sine" });
-    }, 60);
-    window.setTimeout(() => {
-      this.playTone({ frequency: 1160, duration: 0.12, gain: 0.11, type: "sine" });
-    }, 120);
+    this.playVariant("bonus", {
+      detune: this.randomDetune(40),
+      rate: this.randomRate(0.96, 1.06),
+    });
   }
 
   socketBonus() {
-    this.playTone({ frequency: 880, duration: 0.12, gain: 0.13, type: "sine" });
-    window.setTimeout(() => {
-      this.playTone({ frequency: 1320, duration: 0.2, gain: 0.1, type: "sine" });
-    }, 90);
+    this.playVariant("socketBonus", {
+      detune: this.randomDetune(35),
+      rate: this.randomRate(0.97, 1.05),
+    });
   }
 
   gameOver() {
     this.stopConveyor();
-    this.playNoise({ duration: 0.32, gain: 0.26, filterFrequency: 240 });
-    this.playTone({
-      frequency: 180,
-      endFrequency: 54,
-      duration: 0.55,
-      gain: 0.24,
-      type: "sawtooth",
+    this.playVariant("gameOver", {
+      detune: this.randomDetune(30),
+      rate: this.randomRate(0.95, 1.04),
     });
   }
 
   clockTick(mode: ClockTickMode) {
     if (mode === "normal") {
-      this.playTone({ frequency: 520, duration: 0.045, gain: 0.08, type: "square" });
+      this.playVariant("clockNormal", {
+        detune: this.randomDetune(35),
+        rate: this.randomRate(0.97, 1.03),
+      });
       return;
     }
 
     if (mode === "amber") {
-      this.playTone({ frequency: 680, duration: 0.055, gain: 0.11, type: "square" });
+      this.playVariant("clockAmber", {
+        detune: this.randomDetune(40),
+        rate: this.randomRate(0.96, 1.04),
+      });
       return;
     }
 
-    this.playTone({
-      frequency: 190,
-      endFrequency: 150,
-      duration: 0.09,
-      gain: 0.16,
-      type: "sawtooth",
+    this.playVariant("clockRed", {
+      detune: this.randomDetune(45),
+      rate: this.randomRate(0.95, 1.05),
     });
   }
 
   destroy() {
     this.isDestroyed = true;
     this.stopConveyor();
-
-    if (this.context && this.context.state !== "closed") {
-      this.context.close();
-    }
-
-    this.context = undefined;
-    this.master = undefined;
   }
 
   private startConveyorLoop() {
@@ -256,114 +266,5 @@ export class SoundFx {
 
   private randomDetune(spread: number) {
     return Phaser.Math.Between(-spread, spread);
-  }
-
-  private playTone({
-    frequency,
-    endFrequency,
-    duration,
-    gain,
-    type,
-  }: {
-    frequency: number;
-    endFrequency?: number;
-    duration: number;
-    gain: number;
-    type: OscillatorType;
-  }) {
-    this.ensureContext();
-
-    if (!this.context || !this.master) {
-      return;
-    }
-
-    const oscillator = this.context.createOscillator();
-    const envelope = this.context.createGain();
-    const now = this.context.currentTime;
-
-    oscillator.type = type;
-    oscillator.frequency.setValueAtTime(frequency, now);
-
-    if (endFrequency !== undefined) {
-      oscillator.frequency.exponentialRampToValueAtTime(
-        Math.max(1, endFrequency),
-        now + duration,
-      );
-    }
-
-    envelope.gain.setValueAtTime(0.0001, now);
-    envelope.gain.exponentialRampToValueAtTime(gain, now + 0.012);
-    envelope.gain.exponentialRampToValueAtTime(0.0001, now + duration);
-    oscillator.connect(envelope);
-    envelope.connect(this.master);
-    oscillator.start(now);
-    oscillator.stop(now + duration + 0.02);
-  }
-
-  private playNoise({
-    duration,
-    gain,
-    filterFrequency,
-  }: {
-    duration: number;
-    gain: number;
-    filterFrequency: number;
-  }) {
-    this.ensureContext();
-
-    if (!this.context || !this.master) {
-      return;
-    }
-
-    const source = this.context.createBufferSource();
-    const filter = this.context.createBiquadFilter();
-    const envelope = this.context.createGain();
-    const now = this.context.currentTime;
-
-    source.buffer = this.createNoiseBuffer(duration);
-    filter.type = "lowpass";
-    filter.frequency.value = filterFrequency;
-    filter.Q.value = 0.9;
-    envelope.gain.setValueAtTime(0.0001, now);
-    envelope.gain.exponentialRampToValueAtTime(gain, now + 0.01);
-    envelope.gain.exponentialRampToValueAtTime(0.0001, now + duration);
-    source.connect(filter);
-    filter.connect(envelope);
-    envelope.connect(this.master);
-    source.start(now);
-    source.stop(now + duration + 0.02);
-  }
-
-  private createNoiseBuffer(duration: number) {
-    this.ensureContext();
-
-    if (!this.context) {
-      throw new Error("AudioContext is not available.");
-    }
-
-    const length = Math.max(1, Math.floor(this.context.sampleRate * duration));
-    const buffer = this.context.createBuffer(1, length, this.context.sampleRate);
-    const data = buffer.getChannelData(0);
-
-    for (let index = 0; index < length; index += 1) {
-      data[index] = Math.random() * 2 - 1;
-    }
-
-    return buffer;
-  }
-
-  private ensureContext() {
-    if (this.isDestroyed) {
-      return;
-    }
-
-    if (this.context) {
-      return;
-    }
-
-    this.context = new AudioContext();
-    this.master = this.context.createGain();
-    this.master.gain.value = 0.42;
-    this.master.connect(this.context.destination);
   }
 }
