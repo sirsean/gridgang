@@ -1108,10 +1108,13 @@ export class BootScene extends Phaser.Scene {
 
   private findDropPlacement(cargo: ConveyorCargo, pointerX: number) {
     const { definition } = cargo;
-    const shapeWidth = this.getShapeCellWidth(definition);
+    const shapeMinX = this.getShapeMinCellX(definition);
+    const shapeMaxX = this.getShapeMaxCellX(definition);
     const grabbedColumn = Math.floor((pointerX - bay.x) / bay.cell);
     const anchoredColumn = grabbedColumn - cargo.grabCellOffsetX;
-    const column = Phaser.Math.Clamp(anchoredColumn, 0, bay.columns - shapeWidth);
+    const minColumn = -shapeMinX;
+    const maxColumn = bay.columns - shapeMaxX - 1;
+    const column = Phaser.Math.Clamp(anchoredColumn, minColumn, maxColumn);
 
     if (!this.canPlaceShape(definition, column, 0)) {
       return null;
@@ -1566,6 +1569,14 @@ export class BootScene extends Phaser.Scene {
 
   private getShapeCellWidth(definition: ShapeDefinition) {
     return Math.max(...definition.cells.map(([cellX]) => cellX)) + 1;
+  }
+
+  private getShapeMinCellX(definition: ShapeDefinition) {
+    return Math.min(...definition.cells.map(([cellX]) => cellX));
+  }
+
+  private getShapeMaxCellX(definition: ShapeDefinition) {
+    return Math.max(...definition.cells.map(([cellX]) => cellX));
   }
 
   private getShapeCellHeight(definition: ShapeDefinition) {
