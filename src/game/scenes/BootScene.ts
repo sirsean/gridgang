@@ -1437,54 +1437,7 @@ export class BootScene extends Phaser.Scene {
 
   private getScoreValue(definition: ShapeDefinition) {
     const baseScore = definition.cells.length * 100;
-    const isRed = definition.color === palette.hazard;
-    const isYellow = definition.color === palette.cargoC;
-    const isTeal = definition.color === palette.cargoB;
-    const isGrey =
-      definition.color === palette.cargoA || definition.color === palette.cargoD;
-    const isSmall = definition.cells.length <= 4;
-    const isLarge = definition.cells.length >= 5;
-
-    let value: number;
-
-    switch (this.mission.scoringRule) {
-      case "red-only":
-        value = isRed ? baseScore : 0;
-        break;
-      case "yellow-penalty":
-        value = isYellow ? -baseScore : baseScore;
-        break;
-      case "yellow-only":
-        value = isYellow ? baseScore : 0;
-        break;
-      case "teal-only":
-        value = isTeal ? baseScore : 0;
-        break;
-      case "grey-only":
-        value = isGrey ? baseScore : 0;
-        break;
-      case "red-penalty":
-        value = isRed ? -baseScore : baseScore;
-        break;
-      case "non-red-only":
-        value = isRed ? 0 : baseScore;
-        break;
-      case "small-double":
-        value = isSmall ? baseScore * 2 : baseScore;
-        break;
-      case "large-double":
-        value = isLarge ? baseScore * 2 : baseScore;
-        break;
-      case "small-penalty":
-        value = isSmall ? -baseScore : baseScore;
-        break;
-      case "half-manifest":
-        value = Math.floor(baseScore / 2);
-        break;
-      case "standard":
-        value = baseScore;
-        break;
-    }
+    let value = baseScore;
 
     const mask = definition.hotCellMask;
     const cellCount = definition.cells.length;

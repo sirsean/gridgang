@@ -50,7 +50,8 @@ body {
   width: 100%;
   min-height: 100vh;
   min-height: 100dvh;
-  place-items: center;
+  align-items: start;
+  justify-items: center;
 }
 
 .is-hidden {
@@ -64,12 +65,17 @@ body {
   width: 100%;
   min-height: 100vh;
   min-height: 100dvh;
+  max-height: 100vh;
+  max-height: 100dvh;
   align-content: center;
   justify-items: center;
   gap: 16px;
   padding: 24px;
+  padding-bottom: max(24px, env(safe-area-inset-bottom, 0px));
   text-align: center;
-  overflow: hidden;
+  overflow-x: hidden;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
   font-family:
     "Nakamura", ui-monospace, "SFMono-Regular", "SF Mono", Consolas,
     "Liberation Mono", Menlo, monospace;
@@ -146,18 +152,30 @@ body {
   background: #252525;
 }
 
+.home-layout {
+  display: grid;
+  width: min(960px, 100%);
+  margin-top: 12px;
+  grid-template-columns: minmax(0, 320px) minmax(0, 1fr);
+  gap: 16px;
+  align-items: start;
+}
+
 .mission-list {
   display: grid;
-  width: min(920px, 100%);
-  grid-template-columns: repeat(2, minmax(0, 1fr));
+  width: 100%;
+  grid-template-columns: 1fr;
   gap: 12px;
-  margin-top: 12px;
+}
+
+.home-leaderboard {
+  min-width: 0;
 }
 
 .mission-card {
   position: relative;
   display: grid;
-  min-height: 260px;
+  min-height: 200px;
   align-content: start;
   gap: 12px;
   padding: 20px;
@@ -199,58 +217,127 @@ body {
 }
 
 .mission-summary {
-  min-height: 42px;
+  min-height: 36px;
   margin: 0;
   color: #c7d0cc;
   font-size: 0.95rem;
   line-height: 1.45;
 }
 
-.mission-scores {
+.leaderboard-panel {
+  position: relative;
   display: grid;
-  gap: 6px;
-  padding-top: 4px;
-  border-top: 1px solid rgba(127, 140, 141, 0.42);
+  gap: 14px;
+  min-height: 200px;
+  padding: 22px 22px 20px;
+  border: 2px solid #101010;
+  border-radius: 0;
+  background:
+    linear-gradient(180deg, rgba(10, 10, 10, 0.42), rgba(5, 5, 5, 0.78)),
+    url("/assets/home/mission-terminal-panel.png") center / cover no-repeat,
+    #161616;
+  box-shadow:
+    inset 0 0 0 2px rgba(127, 140, 141, 0.32),
+    inset 0 0 36px rgba(0, 0, 0, 0.82),
+    0 14px 32px rgba(0, 0, 0, 0.52);
+  text-align: left;
+  clip-path: polygon(18px 0, calc(100% - 18px) 0, 100% 18px, 100% calc(100% - 18px), calc(100% - 18px) 100%, 18px 100%, 0 calc(100% - 18px), 0 18px);
 }
 
-.mission-scores-title,
-.mission-scores-empty {
+.leaderboard-panel::before {
+  position: absolute;
+  top: 10px;
+  right: 16px;
+  width: 68px;
+  height: 8px;
+  background:
+    radial-gradient(circle, #e35335 0 28%, transparent 32%) 0 0 / 18px 8px repeat-x,
+    radial-gradient(circle, #c4a15a 0 26%, transparent 30%) 9px 0 / 22px 8px repeat-x;
+  filter: drop-shadow(0 0 5px rgba(227, 83, 53, 0.78));
+  opacity: 0.82;
+  content: "";
+  animation: led-flicker 2.9s infinite steps(4, end);
+}
+
+.leaderboard-header {
+  display: grid;
+  gap: 4px;
+  padding-bottom: 2px;
+  border-bottom: 1px solid rgba(127, 140, 141, 0.45);
+}
+
+.leaderboard-eyebrow {
   margin: 0;
   color: #c4a15a;
-  font-size: 0.8rem;
+  font-size: 0.78rem;
   text-transform: uppercase;
 }
 
-.mission-scores-empty {
-  color: #7f8c8d;
-  text-transform: none;
+.leaderboard-title {
+  margin: 0;
+  color: #f1f1e6;
+  font-size: 1.35rem;
+  line-height: 1.1;
+  text-transform: uppercase;
 }
 
-.mission-score-list {
+.leaderboard-empty {
+  margin: 0;
+  color: #7f8c8d;
+  font-size: 0.95rem;
+  line-height: 1.5;
+}
+
+.leaderboard-list {
   display: grid;
-  gap: 4px;
+  gap: 0;
   margin: 0;
   padding: 0;
   list-style: none;
   color: #c7d0cc;
-  font-size: 0.8rem;
+  font-size: 0.95rem;
 }
 
-.mission-score-list li {
-  display: flex;
-  justify-content: space-between;
-  gap: 10px;
+.leaderboard-list li {
+  display: grid;
+  grid-template-columns: 2rem minmax(0, 1fr) auto;
+  gap: 12px;
+  align-items: baseline;
+  padding: 10px 4px;
+  border-bottom: 1px solid rgba(79, 86, 88, 0.55);
 }
 
-.mission-score-list time {
-  color: #9b9b9b;
+.leaderboard-list li:last-child {
+  border-bottom: none;
+  padding-bottom: 2px;
+}
+
+.leaderboard-rank {
+  color: #7f8c8d;
+  font-variant-numeric: tabular-nums;
   text-align: right;
+}
+
+.leaderboard-score-value {
+  color: #f1f1e6;
+  font-size: 1.05rem;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: 0.04em;
+}
+
+.leaderboard-score-time {
+  color: #9b9b9b;
+  font-size: 0.82rem;
+  text-align: right;
+  white-space: nowrap;
 }
 
 .mission-action {
   min-height: 56px;
+  width: 100%;
   margin-top: auto;
   border: 3px solid #050505;
+  touch-action: manipulation;
   border-radius: 0;
   color: #f1f1e6;
   background:
@@ -305,6 +392,8 @@ body {
   align-content: center;
   justify-items: center;
   padding: 16px;
+  padding-top: max(16px, env(safe-area-inset-top, 0px));
+  padding-bottom: max(16px, env(safe-area-inset-bottom, 0px));
 }
 
 .masthead {
@@ -351,16 +440,39 @@ h1 {
 #game canvas {
   display: block;
   max-width: 100%;
-  max-height: calc(100vh - 112px);
+  max-height: calc(100vh - 8rem);
+  max-height: min(
+    calc(100dvh - 8rem),
+    calc(
+      100dvh - env(safe-area-inset-top, 0px) - env(safe-area-inset-bottom, 0px) -
+        7.5rem
+    )
+  );
   margin-inline: auto;
   border: 1px solid #4f5658;
   background: #090909;
 }
 
+/* Tablet / large phone: single column so play card and leaderboard get full width */
+@media (max-width: 840px) {
+  .home-layout {
+    grid-template-columns: 1fr;
+    width: 100%;
+    max-width: min(520px, 100%);
+    margin-inline: auto;
+  }
+
+  .mission-list {
+    max-width: 100%;
+  }
+}
+
 @media (max-width: 620px) {
   .home-screen {
     align-content: start;
-    padding-block: 28px;
+    padding: 18px 14px;
+    padding-bottom: max(20px, env(safe-area-inset-bottom, 0px));
+    gap: 12px;
   }
 
   .home-mark {
@@ -368,8 +480,97 @@ h1 {
     height: 112px;
   }
 
-  .mission-list {
-    grid-template-columns: 1fr;
+  .home-layout {
+    margin-top: 4px;
+    gap: 14px;
+  }
+
+  .home-status-strip {
+    width: min(100%, 520px);
+  }
+
+  .mission-card,
+  .leaderboard-panel {
+    padding: 16px 14px;
+  }
+
+  .leaderboard-panel {
+    gap: 12px;
+  }
+
+  .leaderboard-title {
+    font-size: 1.15rem;
+  }
+
+  .leaderboard-list {
+    font-size: 0.88rem;
+  }
+
+  .leaderboard-score-value {
+    font-size: 0.98rem;
+  }
+
+  .shell {
+    padding: 12px;
+    padding-top: max(12px, env(safe-area-inset-top, 0px));
+    padding-bottom: max(12px, env(safe-area-inset-bottom, 0px));
+    align-content: start;
+    gap: 10px;
+  }
+
+  .masthead {
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 10px;
+  }
+
+  .masthead h1 {
+    font-size: 1.45rem;
+  }
+
+  #game canvas {
+    max-height: calc(100vh - 6.5rem);
+    max-height: min(
+      calc(100dvh - 6.5rem),
+      calc(
+        100dvh - env(safe-area-inset-top, 0px) - env(safe-area-inset-bottom, 0px) -
+          6rem
+      )
+    );
+  }
+}
+
+/* Narrow phones: leaderboard rows stack so dates are not clipped */
+@media (max-width: 420px) {
+  .leaderboard-list li {
+    grid-template-columns: 1.5rem 1fr;
+    grid-template-rows: auto auto;
+    gap: 2px 10px;
+    padding: 10px 2px;
+    align-items: start;
+  }
+
+  .leaderboard-rank {
+    grid-row: 1 / span 2;
+    align-self: center;
+  }
+
+  .leaderboard-score-value {
+    grid-column: 2;
+    grid-row: 1;
+    justify-self: end;
+    text-align: right;
+  }
+
+  .leaderboard-score-time {
+    grid-column: 2;
+    grid-row: 2;
+    justify-self: end;
+    max-width: 100%;
+    text-align: right;
+    white-space: normal;
+    font-size: 0.75rem;
+    line-height: 1.25;
   }
 }
 

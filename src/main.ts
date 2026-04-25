@@ -1,10 +1,6 @@
 import "./styles/main.css";
 import { createGame } from "./game/createGame";
-import {
-  getMissionByDock,
-  selectHomeMissions,
-  type DockMission,
-} from "./game/missions";
+import { defaultMission, type DockMission } from "./game/missions";
 import { getHighScores } from "./game/highScores";
 import type * as Phaser from "phaser";
 
@@ -13,6 +9,7 @@ let game: Phaser.Game | undefined;
 const homeScreen = document.querySelector<HTMLElement>("#home-screen");
 const gameScreen = document.querySelector<HTMLElement>("#game-screen");
 const missionList = document.querySelector<HTMLElement>("#mission-list");
+const homeLeaderboard = document.querySelector<HTMLElement>("#home-leaderboard");
 const gameContainer = document.querySelector<HTMLElement>("#game");
 const gameDockLabel = document.querySelector<HTMLElement>("#game-dock-label");
 
@@ -21,9 +18,7 @@ function showGame() {
     return;
   }
 
-  const mission = getMissionByDock(
-    new URLSearchParams(window.location.search).get("dock"),
-  );
+  const mission = defaultMission;
 
   game?.destroy(true);
   gameContainer.replaceChildren();
@@ -34,7 +29,7 @@ function showGame() {
 }
 
 function showHome() {
-  if (!homeScreen || !gameScreen || !missionList) {
+  if (!homeScreen || !gameScreen || !missionList || !homeLeaderboard) {
     return;
   }
 
@@ -43,15 +38,16 @@ function showHome() {
   renderHomeMissions();
   gameScreen.classList.add("is-hidden");
   homeScreen.classList.remove("is-hidden");
-  missionList.querySelector<HTMLButtonElement>("[data-dock]")?.focus();
+  missionList.querySelector<HTMLButtonElement>("button")?.focus();
 }
 
 function renderHomeMissions() {
-  if (!missionList) {
+  if (!missionList || !homeLeaderboard) {
     return;
   }
 
-  missionList.replaceChildren(...selectHomeMissions().map(createMissionCard));
+  missionList.replaceChildren(createMissionCard(defaultMission));
+  homeLeaderboard.replaceChildren(createLeaderboardPanel(defaultMission));
 }
 
 function createMissionCard(mission: DockMission) {
@@ -69,65 +65,79 @@ function createMissionCard(mission: DockMission) {
   summary.className = "mission-summary";
   summary.textContent = mission.summary;
 
-  const highScores = createHighScoreList(mission);
-
   const button = document.createElement("button");
   button.className = "mission-action";
   button.type = "button";
-  button.dataset.dock = mission.dock;
   button.textContent = "Start";
   button.addEventListener("click", () => {
-    navigateTo(`/game?dock=${mission.dock}`);
+    navigateTo("/game");
   });
 
   card.appendChild(dock);
   card.appendChild(name);
   card.appendChild(summary);
-  card.appendChild(highScores);
   card.appendChild(button);
 
   return card;
 }
 
-function createHighScoreList(mission: DockMission) {
-  const scores = getHighScores(mission.dock).slice(0, 3);
-  const wrapper = document.createElement("section");
-  wrapper.className = "mission-scores";
-  wrapper.setAttribute("aria-label", `Dock ${mission.dock} top scores`);
+function createLeaderboardPanel(mission: DockMission) {
+  const scores = getHighScores(mission.dock).slice(0, 10);
+  const panel = document.createElement("article");
+  panel.className = "leaderboard-panel";
 
-  const title = document.createElement("p");
-  title.className = "mission-scores-title";
-  title.textContent = "Top Scores";
-  wrapper.appendChild(title);
+  const header = document.createElement("header");
+  header.className = "leaderboard-header";
+
+  const eyebrow = document.createElement("p");
+  eyebrow.className = "leaderboard-eyebrow";
+  eyebrow.textContent = `Dock ${mission.dock}`;
+
+  const title = document.createElement("h2");
+  title.className = "leaderboard-title";
+  title.textContent = "Leaderboard";
+
+  header.appendChild(eyebrow);
+  header.appendChild(title);
+  panel.appendChild(header);
 
   if (scores.length === 0) {
     const empty = document.createElement("p");
-    empty.className = "mission-scores-empty";
-    empty.textContent = "No runs logged.";
-    wrapper.appendChild(empty);
-    return wrapper;
+    empty.className = "leaderboard-empty";
+    empty.textContent = "No runs logged yet. Finish a run to claim a spot.";
+    panel.appendChild(empty);
+    return panel;
   }
 
   const list = document.createElement("ol");
-  list.className = "mission-score-list";
+  list.className = "leaderboard-list";
 
-  for (const score of scores) {
+  for (let index = 0; index < scores.length; index += 1) {
+    const score = scores[index];
     const item = document.createElement("li");
+
+    const rank = document.createElement("span");
+    rank.className = "leaderboard-rank";
+    rank.textContent = String(index + 1);
+
     const scoreValue = document.createElement("span");
+    scoreValue.className = "leaderboard-score-value";
     const playedAt = document.createElement("time");
+    playedAt.className = "leaderboard-score-time";
 
     scoreValue.textContent = formatScore(score.score);
     playedAt.dateTime = score.playedAt;
     playedAt.textContent = formatPlayedAt(score.playedAt);
 
+    item.appendChild(rank);
     item.appendChild(scoreValue);
     item.appendChild(playedAt);
     list.appendChild(item);
   }
 
-  wrapper.appendChild(list);
+  panel.appendChild(list);
 
-  return wrapper;
+  return panel;
 }
 
 function navigateTo(url: string) {
