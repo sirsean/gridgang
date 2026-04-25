@@ -73,6 +73,23 @@ npm run assets:home -- --only dock-control-wall,mechanical-button
 npm run assets:home -- --force
 ```
 
+Generate a new logo/favicon pass by editing the compendium icon with OpenAI:
+
+```sh
+OPENAI_API_KEY=<your_api_key_here> npm run assets:logo
+```
+
+Useful options:
+
+```sh
+npm run assets:logo -- --dry-run
+npm run assets:logo -- --prompt-extra "more stencil, less paint bleed"
+npm run assets:logo -- --force
+npm run assets:logo -- --force --apply-live
+```
+
+Outputs are written to `public/assets/branding/` by default, including a master image and favicon-sized derivatives.
+
 Deploy to Cloudflare Workers:
 
 ```sh

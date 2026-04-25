@@ -13,6 +13,7 @@
     "assets:conveyor": "node scripts/generate-conveyor-belt-assets.mjs",
     "assets:dock-bg": "node scripts/generate-dock-background-assets.mjs",
     "assets:audio": "node scripts/generate-audio-assets.mjs",
+    "assets:logo": "node scripts/generate-logo-assets.mjs",
     "preview": "vite preview",
     "deploy": "vite build && wrangler deploy",
     "db:migrate:local": "wrangler d1 migrations apply DB --local",

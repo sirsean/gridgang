@@ -1,0 +1,45 @@
+{
+  "generatedAt": "2026-04-25T15:22:07.155Z",
+  "model": "gpt-image-1.5",
+  "quality": "low",
+  "size": "1024x1024",
+  "sourceImage": "public/assets/grid-gang-icon.png",
+  "source": "OpenAI images edits API",
+  "prompt": "Use case: logo and favicon redesign for the Gridgang game while preserving brand recognition.\nPrimary request: transform the provided Gridgang icon into an in-world dockside mark that still reads as the same symbol.\nStyle/medium: cassette-futurism mixed with rough spray-painted stencil and cheap rough-printed cargo-yard signage.\nComposition/framing: centered iconic mark on transparent-free dark neutral backdrop, strong silhouette, high legibility at 32x32 favicon size.\nVisual texture: paint overspray, uneven ink coverage, chipped pigment, weathered rust dust, grime, but edges still recognizable.\nMood: dangerous leviathan cargo docks, contraband-adjacent graffiti tag, used by workers and smugglers.\nColor direction: oxidized steel greys, hazard red-orange, soot black, muted amber accents; avoid bright clean neon.\nConstraints: keep the core geometry recognizable from the original icon, no readable text, no letters, no numbers, no watermark, no decorative frame.\nAvoid: glossy modern logo polish, corporate vector smoothness, cyberpunk purple gradients, photoreal people, scene backgrounds.",
+  "files": [
+    {
+      "id": "master",
+      "file": "public/assets/branding/grid-gang-logo-master.png",
+      "width": 1024,
+      "height": 1024
+    },
+    {
+      "id": "logo-icon",
+      "file": "public/assets/branding/grid-gang-icon.png",
+      "width": 512,
+      "height": 512,
+      "status": "generated"
+    },
+    {
+      "id": "favicon",
+      "file": "public/assets/branding/favicon.png",
+      "width": 256,
+      "height": 256,
+      "status": "generated"
+    },
+    {
+      "id": "favicon-64",
+      "file": "public/assets/branding/favicon-64.png",
+      "width": 64,
+      "height": 64,
+      "status": "generated"
+    },
+    {
+      "id": "favicon-32",
+      "file": "public/assets/branding/favicon-32.png",
+      "width": 32,
+      "height": 32,
+      "status": "generated"
+    }
+  ]
+}
