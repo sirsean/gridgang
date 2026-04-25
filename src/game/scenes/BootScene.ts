@@ -1,6 +1,6 @@
 import * as Phaser from "phaser";
+import { fetchRemoteLeaderboard, submitRemoteScore } from "../../api/server";
 import { SoundFx } from "../audio/SoundFx";
-import { getTopHighScore, recordHighScore } from "../highScores";
 import { defaultMission, type DockMission } from "../missions";
 
 type CargoCell = [number, number];
@@ -297,6 +297,7 @@ export class BootScene extends Phaser.Scene {
   private scoreText?: Phaser.GameObjects.Text;
   private topScoreText?: Phaser.GameObjects.Text;
   private timerText?: Phaser.GameObjects.Text;
+  private sharedTopScore: number | null = null;
   private inspectorProbeX = 0;
   private inspectorRail?: Phaser.GameObjects.TileSprite;
   private inspectorBeam?: Phaser.GameObjects.Rectangle;
@@ -361,6 +362,7 @@ export class BootScene extends Phaser.Scene {
     this.drawInspectorRig();
     this.seedConveyor();
     this.drawHud();
+    void this.refreshSharedTopScore();
 
     this.soundFx.startConveyor();
     this.input.on("pointerdown", () => {
@@ -1466,9 +1468,17 @@ export class BootScene extends Phaser.Scene {
     this.activeDrag = undefined;
     this.clearDropPreview();
     this.soundFx.gameOver();
-    const previousBest = getTopHighScore(this.mission.dock);
-    const isNewBest = !previousBest || this.score > previousBest.score;
-    recordHighScore(this.mission.dock, this.score);
+    const previousBest = this.sharedTopScore;
+    const isNewBest = previousBest === null || this.score > previousBest;
+    const playedAt = new Date().toISOString();
+    void submitRemoteScore(
+      this.mission.dock,
+      this.score,
+      playedAt,
+    );
+    if (isNewBest) {
+      this.sharedTopScore = this.score;
+    }
     this.updateScoreText();
 
     for (const cargo of this.conveyorCargo) {
@@ -1507,7 +1517,7 @@ export class BootScene extends Phaser.Scene {
           `FINAL SCORE ${this.formatScore(this.score)}`,
           isNewBest
             ? "NEW DOCK RECORD"
-            : `DOCK BEST ${this.formatScore(previousBest!.score)}`,
+            : `DOCK BEST ${this.formatScore(previousBest ?? this.score)}`,
         ].join("\n"),
         {
           align: "center",
@@ -1619,13 +1629,20 @@ export class BootScene extends Phaser.Scene {
   }
 
   private getTopScoreLabel() {
-    const topScore = getTopHighScore(this.mission.dock);
-
-    if (!topScore) {
+    if (this.sharedTopScore === null) {
       return this.score === 0 ? "BEST ------" : `BEST ${this.formatScore(this.score)}`;
     }
 
-    return `BEST ${this.formatScore(Math.max(this.score, topScore.score))}`;
+    return `BEST ${this.formatScore(Math.max(this.score, this.sharedTopScore))}`;
+  }
+
+  private async refreshSharedTopScore() {
+    const leaderboard = await fetchRemoteLeaderboard(this.mission.dock);
+    if (!leaderboard || leaderboard.length === 0) {
+      return;
+    }
+    this.sharedTopScore = leaderboard[0].score;
+    this.updateScoreText();
   }
 
   private updateTimerText() {

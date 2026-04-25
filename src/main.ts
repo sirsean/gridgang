@@ -1,4 +1,9 @@
 import "./styles/main.css";
+import {
+  fetchMe,
+  fetchRemoteLeaderboard,
+  logout,
+} from "./api/server";
 import { createGame } from "./game/createGame";
 import { defaultMission, type DockMission } from "./game/missions";
 import { getHighScores } from "./game/highScores";
@@ -28,6 +33,20 @@ function showGame() {
   game = createGame("game", mission);
 }
 
+function consumeAuthErrorFromUrl(): string | null {
+  const params = new URLSearchParams(window.location.search);
+  const raw = params.get("auth_error");
+  if (!raw || window.location.pathname !== "/") {
+    return null;
+  }
+  window.history.replaceState(null, "", "/");
+  try {
+    return decodeURIComponent(raw);
+  } catch {
+    return raw;
+  }
+}
+
 function showHome() {
   if (!homeScreen || !gameScreen || !missionList || !homeLeaderboard) {
     return;
@@ -35,19 +54,91 @@ function showHome() {
 
   game?.destroy(true);
   game = undefined;
-  renderHomeMissions();
+  const authError = consumeAuthErrorFromUrl();
+  void renderHomeMissions(authError);
   gameScreen.classList.add("is-hidden");
   homeScreen.classList.remove("is-hidden");
   missionList.querySelector<HTMLButtonElement>("button")?.focus();
 }
 
-function renderHomeMissions() {
+async function renderHomeMissions(authError: string | null) {
   if (!missionList || !homeLeaderboard) {
     return;
   }
 
   missionList.replaceChildren(createMissionCard(defaultMission));
-  homeLeaderboard.replaceChildren(createLeaderboardPanel(defaultMission));
+
+  homeLeaderboard.replaceChildren(
+    await createLeaderboardPanel(defaultMission, authError),
+  );
+}
+
+function appendLeaderboardAuthBlock(
+  panel: HTMLElement,
+  authError: string | null,
+  me: { displayName: string; avatarUrl: string | null } | null,
+) {
+  const block = document.createElement("div");
+  block.className = "leaderboard-auth";
+
+  if (authError) {
+    const err = document.createElement("p");
+    err.className = "leaderboard-auth-error";
+    err.textContent = `Sign-in did not complete: ${authError}`;
+    block.appendChild(err);
+  }
+
+  if (me) {
+    const row = document.createElement("div");
+    row.className = "leaderboard-auth-row";
+
+    const identity = document.createElement("div");
+    identity.className = "leaderboard-auth-identity";
+
+    if (me.avatarUrl) {
+      const avatar = document.createElement("img");
+      avatar.className = "leaderboard-auth-avatar";
+      avatar.src = me.avatarUrl;
+      avatar.alt = `${me.displayName} avatar`;
+      avatar.width = 40;
+      avatar.height = 40;
+      avatar.loading = "lazy";
+      identity.appendChild(avatar);
+    }
+
+    const label = document.createElement("p");
+    label.className = "leaderboard-auth-status";
+    label.textContent = `Linked as ${me.displayName}`;
+
+    const btn = document.createElement("button");
+    btn.type = "button";
+    btn.className = "leaderboard-auth-signout";
+    btn.textContent = "Sign out";
+    btn.addEventListener("click", async () => {
+      await logout();
+      await renderHomeMissions(null);
+    });
+
+    identity.appendChild(label);
+    row.appendChild(identity);
+    row.appendChild(btn);
+    block.appendChild(row);
+  } else {
+    const hint = document.createElement("p");
+    hint.className = "leaderboard-auth-hint";
+    hint.textContent =
+      "Link Discord to post runs to the shared board and show your callsign next to scores.";
+
+    const link = document.createElement("a");
+    link.href = "/api/auth/discord";
+    link.className = "leaderboard-discord-cta";
+    link.textContent = "Sign in with Discord";
+
+    block.appendChild(hint);
+    block.appendChild(link);
+  }
+
+  panel.appendChild(block);
 }
 
 function createMissionCard(mission: DockMission) {
@@ -81,8 +172,25 @@ function createMissionCard(mission: DockMission) {
   return card;
 }
 
-function createLeaderboardPanel(mission: DockMission) {
-  const scores = getHighScores(mission.dock).slice(0, 10);
+type LeaderboardRow =
+  | {
+      kind: "remote";
+      score: number;
+      playedAt: string;
+      playerName: string;
+      avatarUrl: string | null;
+    }
+  | { kind: "local"; score: number; playedAt: string };
+
+async function createLeaderboardPanel(
+  mission: DockMission,
+  authError: string | null,
+) {
+  const [remote, me] = await Promise.all([
+    fetchRemoteLeaderboard(mission.dock),
+    fetchMe(),
+  ]);
+
   const panel = document.createElement("article");
   panel.className = "leaderboard-panel";
 
@@ -101,10 +209,41 @@ function createLeaderboardPanel(mission: DockMission) {
   header.appendChild(title);
   panel.appendChild(header);
 
-  if (scores.length === 0) {
+  appendLeaderboardAuthBlock(panel, authError, me);
+
+  let rows: LeaderboardRow[];
+
+  if (remote !== null) {
+    rows = remote.map((e) => ({
+      kind: "remote" as const,
+      score: e.score,
+      playedAt: e.playedAt,
+      playerName: e.playerName,
+      avatarUrl: e.avatarUrl,
+    }));
+  } else {
+    const note = document.createElement("p");
+    note.className = "leaderboard-offline-note";
+    note.textContent =
+      "Could not reach the dock network. Showing scores from this device only.";
+    panel.appendChild(note);
+    rows = getHighScores(mission.dock).slice(0, 10).map((e) => ({
+      kind: "local" as const,
+      score: e.score,
+      playedAt: e.playedAt,
+    }));
+  }
+
+  if (rows.length === 0) {
     const empty = document.createElement("p");
     empty.className = "leaderboard-empty";
-    empty.textContent = "No runs logged yet. Finish a run to claim a spot.";
+    if (remote !== null) {
+      empty.textContent = me
+        ? "No runs on the shared board yet. Finish a run to post your score."
+        : "No runs on the shared board yet.";
+    } else {
+      empty.textContent = "No runs logged yet. Finish a run to claim a spot.";
+    }
     panel.appendChild(empty);
     return panel;
   }
@@ -112,24 +251,49 @@ function createLeaderboardPanel(mission: DockMission) {
   const list = document.createElement("ol");
   list.className = "leaderboard-list";
 
-  for (let index = 0; index < scores.length; index += 1) {
-    const score = scores[index];
+  for (let index = 0; index < rows.length; index += 1) {
+    const row = rows[index];
     const item = document.createElement("li");
 
     const rank = document.createElement("span");
     rank.className = "leaderboard-rank";
     rank.textContent = String(index + 1);
 
+    const playerCell = document.createElement("div");
+    playerCell.className = "leaderboard-player-cell";
+
+    if (row.kind === "remote" && row.avatarUrl) {
+      const avatarFrame = document.createElement("span");
+      avatarFrame.className = "leaderboard-row-avatar-frame";
+      const avatar = document.createElement("img");
+      avatar.className = "leaderboard-row-avatar";
+      avatar.src = row.avatarUrl;
+      avatar.alt = `${row.playerName} avatar`;
+      avatar.width = 30;
+      avatar.height = 30;
+      avatar.loading = "lazy";
+      avatarFrame.appendChild(avatar);
+      playerCell.appendChild(avatarFrame);
+    }
+
+    const player = document.createElement("span");
+    player.className = "leaderboard-player";
+    player.textContent =
+      row.kind === "remote" ? row.playerName : "This device";
+    playerCell.appendChild(player);
+
     const scoreValue = document.createElement("span");
     scoreValue.className = "leaderboard-score-value";
+
     const playedAt = document.createElement("time");
     playedAt.className = "leaderboard-score-time";
 
-    scoreValue.textContent = formatScore(score.score);
-    playedAt.dateTime = score.playedAt;
-    playedAt.textContent = formatPlayedAt(score.playedAt);
+    scoreValue.textContent = formatScore(row.score);
+    playedAt.dateTime = row.playedAt;
+    playedAt.textContent = formatPlayedAt(row.playedAt);
 
     item.appendChild(rank);
+    item.appendChild(playerCell);
     item.appendChild(scoreValue);
     item.appendChild(playedAt);
     list.appendChild(item);

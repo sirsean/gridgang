@@ -10,8 +10,17 @@
       "custom_domain": true,
     },
   ],
+  "d1_databases": [
+    {
+      "binding": "DB",
+      "database_name": "gridgang",
+      "database_id": "41e68363-fa46-4153-97d5-27373d941d0d",
+    },
+  ],
   "assets": {
     "binding": "ASSETS",
-    "not_found_handling": "single-page-application"
-  }
+    "not_found_handling": "single-page-application",
+    // Document navigations (e.g. clicking the Discord link) must hit the Worker, not SPA fallback.
+    "run_worker_first": ["/api/*"],
+  },
 }
