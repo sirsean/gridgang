@@ -23,4 +23,7 @@
     // Document navigations (e.g. clicking the Discord link) must hit the Worker, not SPA fallback.
     "run_worker_first": ["/api/*"],
   },
+  "vars": {
+    "DISCORD_CLIENT_ID": "1497409438271930388",
+  },
 }
