@@ -1473,12 +1473,7 @@ export class BootScene extends Phaser.Scene {
     this.soundFx.gameOver();
     const previousBest = this.sharedTopScore;
     const isNewBest = previousBest === null || this.score > previousBest;
-    const playedAt = new Date().toISOString();
-    void submitRemoteScore(
-      this.mission.dock,
-      this.score,
-      playedAt,
-    );
+    void submitRemoteScore(this.mission.dock, this.score);
     if (isNewBest) {
       this.sharedTopScore = this.score;
     }

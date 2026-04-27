@@ -54,14 +54,13 @@ export async function fetchMe(): Promise<MeUser | null> {
 export async function submitRemoteScore(
   dock: string,
   score: number,
-  playedAt: string,
 ): Promise<boolean> {
   try {
     const res = await fetch("/api/scores", {
       method: "POST",
       credentials: "same-origin",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ dock, score, playedAt }),
+      body: JSON.stringify({ dock, score }),
     });
     return res.ok;
   } catch {

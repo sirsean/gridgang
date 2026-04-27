@@ -265,7 +265,6 @@ async function handlePostScore(
   const rec = body as Record<string, unknown>;
   const dock = rec.dock;
   const score = rec.score;
-  const playedAtRaw = rec.playedAt;
 
   if (typeof dock !== "string" || !isValidDock(dock)) {
     return jsonResponse({ error: "Invalid dock" }, 400);
@@ -280,14 +279,7 @@ async function handlePostScore(
     return jsonResponse({ error: "Score out of range" }, 400);
   }
 
-  let playedAt: string;
-  if (playedAtRaw === undefined) {
-    playedAt = new Date().toISOString();
-  } else if (typeof playedAtRaw === "string" && Number.isFinite(Date.parse(playedAtRaw))) {
-    playedAt = new Date(playedAtRaw).toISOString();
-  } else {
-    return jsonResponse({ error: "Invalid playedAt" }, 400);
-  }
+  const playedAt = new Date().toISOString();
 
   await env.DB.prepare(
     `INSERT INTO scores (dock, discord_user_id, score, played_at)
