@@ -28,8 +28,7 @@ Do not invent deep lore beyond what the source supports. It is fine to paraphras
 - Language: TypeScript.
 - Game engine: Phaser for 2D rendering and input.
 - Deployment target: Cloudflare Workers via `@cloudflare/vite-plugin` and Wrangler.
-- Persistence for MVP: `localStorage` only.
-- Server component: intentionally deferred until shared leaderboards are needed.
+- Persistence: server-backed shared leaderboard in D1 via Worker APIs.
 
 Keep Phaser game code isolated from DOM UI code:
 
@@ -79,5 +78,4 @@ Before changing Cloudflare-specific config later, check the current Cloudflare W
 - Preserve the icon source attribution in docs.
 - Keep the first game loop small and deterministic enough to test.
 - Separate pure grid/shape rules from Phaser scene rendering where practical.
-- Use `localStorage` behind a small adapter so a future leaderboard service can coexist with local scores.
 - Add focused tests around grid collision, locking, game-over detection, and scoring once those modules exist.

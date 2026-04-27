@@ -6,7 +6,6 @@ import {
 } from "./api/server";
 import { createGame } from "./game/createGame";
 import { defaultMission, type DockMission } from "./game/missions";
-import { getHighScores } from "./game/highScores";
 import type * as Phaser from "phaser";
 
 let game: Phaser.Game | undefined;
@@ -173,14 +172,12 @@ function createMissionCard(mission: DockMission) {
 }
 
 type LeaderboardRow =
-  | {
-      kind: "remote";
-      score: number;
-      playedAt: string;
-      playerName: string;
-      avatarUrl: string | null;
-    }
-  | { kind: "local"; score: number; playedAt: string };
+  {
+    score: number;
+    playedAt: string;
+    playerName: string;
+    avatarUrl: string | null;
+  };
 
 async function createLeaderboardPanel(
   mission: DockMission,
@@ -211,39 +208,26 @@ async function createLeaderboardPanel(
 
   appendLeaderboardAuthBlock(panel, authError, me);
 
-  let rows: LeaderboardRow[];
-
-  if (remote !== null) {
-    rows = remote.map((e) => ({
-      kind: "remote" as const,
-      score: e.score,
-      playedAt: e.playedAt,
-      playerName: e.playerName,
-      avatarUrl: e.avatarUrl,
-    }));
-  } else {
+  if (remote === null) {
     const note = document.createElement("p");
     note.className = "leaderboard-offline-note";
-    note.textContent =
-      "Could not reach the dock network. Showing scores from this device only.";
+    note.textContent = "Could not reach the dock network. Leaderboard unavailable.";
     panel.appendChild(note);
-    rows = getHighScores(mission.dock).slice(0, 10).map((e) => ({
-      kind: "local" as const,
-      score: e.score,
-      playedAt: e.playedAt,
-    }));
+    return panel;
   }
+  const rows: LeaderboardRow[] = remote.map((e) => ({
+    score: e.score,
+    playedAt: e.playedAt,
+    playerName: e.playerName,
+    avatarUrl: e.avatarUrl,
+  }));
 
   if (rows.length === 0) {
     const empty = document.createElement("p");
     empty.className = "leaderboard-empty";
-    if (remote !== null) {
-      empty.textContent = me
-        ? "No runs on the shared board yet. Finish a run to post your score."
-        : "No runs on the shared board yet.";
-    } else {
-      empty.textContent = "No runs logged yet. Finish a run to claim a spot.";
-    }
+    empty.textContent = me
+      ? "No runs on the shared board yet. Finish a run to post your score."
+      : "No runs on the shared board yet.";
     panel.appendChild(empty);
     return panel;
   }
@@ -262,7 +246,7 @@ async function createLeaderboardPanel(
     const playerCell = document.createElement("div");
     playerCell.className = "leaderboard-player-cell";
 
-    if (row.kind === "remote" && row.avatarUrl) {
+    if (row.avatarUrl) {
       const avatarFrame = document.createElement("span");
       avatarFrame.className = "leaderboard-row-avatar-frame";
       const avatar = document.createElement("img");
@@ -278,8 +262,7 @@ async function createLeaderboardPanel(
 
     const player = document.createElement("span");
     player.className = "leaderboard-player";
-    player.textContent =
-      row.kind === "remote" ? row.playerName : "This device";
+    player.textContent = row.playerName;
     playerCell.appendChild(player);
 
     const scoreValue = document.createElement("span");

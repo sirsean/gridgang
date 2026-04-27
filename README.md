@@ -18,7 +18,7 @@ This project is in the early scaffold stage. The repo currently contains a TypeS
 - Vite for the web app build.
 - Phaser for 2D game rendering, scenes, and input.
 - Cloudflare Workers for deployment through `@cloudflare/vite-plugin` and Wrangler.
-- Browser `localStorage` for MVP scoring and high scores.
+- Cloudflare Worker + D1 for shared leaderboard persistence.
 
 ## Local Development
 
@@ -110,4 +110,4 @@ The immediate next step is to turn the static Phaser boot scene into a minimal p
 
 ## Future Direction
 
-The MVP should stay client-only. A future server-backed milestone may add a Cloudflare Worker API for shared leaderboards while keeping local scores as an offline fallback.
+The game now uses a server-backed shared leaderboard via Cloudflare Worker APIs and D1 storage.

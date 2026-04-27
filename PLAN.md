@@ -39,9 +39,8 @@ Source lore and iconography:
 - [ ] Add basic sound effects for selection, drop, lock, and game over.
 - [ ] Make layout responsive without changing core grid rules.
 
-## Milestone 3: Local Progression
+## Milestone 3: Progression
 
-- [ ] Store local high scores in `localStorage`.
 - [ ] Add run history and best score display.
 - [ ] Add shape-specific score values.
 - [ ] Add risk/reward mechanics for awkward or rare cargo shapes.
@@ -64,9 +63,8 @@ Source lore and iconography:
 - [ ] Document production deploy steps.
 - [ ] Add a smoke check for the deployed game URL.
 
-## Future Server Milestone
+## Shared Leaderboard
 
-- [ ] Add a Cloudflare Worker API for shared leaderboards.
-- [ ] Add durable score storage, likely D1 or another Cloudflare-native store after requirements are clearer.
+- [x] Add a Cloudflare Worker API for shared leaderboards.
+- [x] Add durable score storage in D1.
 - [ ] Add basic anti-abuse checks for submitted scores.
-- [ ] Keep local-only scoring as the offline fallback.
