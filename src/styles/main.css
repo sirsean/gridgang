@@ -77,6 +77,13 @@ body {
   overflow-y: auto;
   -webkit-overflow-scrolling: touch;
   font-family:
+    "Space Mono", ui-monospace, "SFMono-Regular", "SF Mono", Consolas,
+    "Liberation Mono", Menlo, monospace;
+}
+
+.home-screen h1,
+.home-screen h2 {
+  font-family:
     "Nakamura", ui-monospace, "SFMono-Regular", "SF Mono", Consolas,
     "Liberation Mono", Menlo, monospace;
 }
