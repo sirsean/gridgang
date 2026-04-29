@@ -67,7 +67,7 @@ body {
   min-height: 100dvh;
   max-height: 100vh;
   max-height: 100dvh;
-  align-content: center;
+  align-content: start;
   justify-items: center;
   gap: 16px;
   padding: 24px;
@@ -771,7 +771,6 @@ h1 {
 
 @media (max-width: 620px) {
   .home-screen {
-    align-content: start;
     padding: 18px 14px;
     padding-bottom: max(20px, env(safe-area-inset-bottom, 0px));
     gap: 12px;
